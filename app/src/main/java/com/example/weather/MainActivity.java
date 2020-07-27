@@ -47,8 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String LOG_TAG = MainActivity.class.getName();
 
-    private static final String REQUEST_URL =
-            "https://api.openweathermap.org/data/2.5/weather?q=Bangalore&appid=fe21f6f759504260a7aa9a4c3b6a2492";
+    private static String request_url = "https://api.openweathermap.org/data/2.5/weather?appid=fe21f6f759504260a7aa9a4c3b6a2492";
 
 
     @Override
@@ -88,11 +87,16 @@ public class MainActivity extends AppCompatActivity {
                                     //lon.setText("Longitude :"+location.getLongitude()+"");
                                     LAT = location.getLatitude()+"";
                                     LON = location.getLongitude()+"";
+                                    //String sample = request_url;
+
                                     //new weatherTask().execute();
                                     if(isNetworkAvailable()) {
                                         //EarthquakeAsyncTask task = new EarthquakeAsyncTask();
                                         //task.execute(REQUEST_URL);
-                                        new EarthquakeAsyncTask().execute(REQUEST_URL);
+                                        Log.v("MainActivity", "OLD URL: "+request_url);
+                                        updateURL(LAT, LON);
+                                        Log.v("MainActivity", "NEW URL: "+request_url);
+                                        new EarthquakeAsyncTask().execute(request_url);
                                     }
 
                                     else {
@@ -112,7 +116,6 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions();
         }
     }
-
 
     @SuppressLint("MissingPermission")
     private void requestNewLocationData(){
@@ -182,6 +185,11 @@ public class MainActivity extends AppCompatActivity {
             getLastLocation();
         }
 
+    }
+
+    public static void updateURL(String lat, String lon) {
+        request_url += "&lat="+lat+"&lon="+lon;
+        Log.v("MainActivity", "New url: " + request_url);
     }
 
     private class EarthquakeAsyncTask extends AsyncTask<String, Void, WeatherData> {

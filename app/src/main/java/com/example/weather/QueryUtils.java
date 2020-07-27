@@ -61,7 +61,6 @@ public final class QueryUtils {
         return temperatureFormat.format(temp)+" °C";
     }
 
-
     public static WeatherData fetchWeatherData(String requestUrl) {
 
         URL url = createUrl(requestUrl);
