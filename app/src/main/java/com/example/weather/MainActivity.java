@@ -15,12 +15,14 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -30,17 +32,25 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-public class MainActivity extends AppCompatActivity {
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
+public class MainActivity extends AppCompatActivity {
+    private static boolean appended = false;
     FusedLocationProviderClient mFusedLocationClient;
+    SwipeRefreshLayout refreshLayout;
     int PERMISSION_ID = 44;
 
-    TextView desc, min, max, lat, lon, net;
+    TextView desc, min, max, lat, lon, net, sample, timestamp;
+    LinearLayout weather_data_container;
     protected LocationManager locationManager;
     String LAT = "sample", LON = "sample";
     protected Context context;
     TextView txtLat;
-    //String lat;
+    String todays_date;
     String provider;
     protected String latitude, longitude;
     protected boolean gps_enabled, network_enabled;
@@ -49,6 +59,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static String request_url = "https://api.openweathermap.org/data/2.5/weather?appid=fe21f6f759504260a7aa9a4c3b6a2492";
 
+    private static final String FILE_NAME = "weatherData.txt";
+
+    WeatherData weatherObj;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,15 +73,59 @@ public class MainActivity extends AppCompatActivity {
         max = findViewById(R.id.max);
         lat = findViewById(R.id.lat);
         lon = findViewById(R.id.lon);
+        timestamp = findViewById(R.id.today);
+        refreshLayout = findViewById(R.id.pullToRefresh);
+        net = findViewById(R.id.check_network);
+        weather_data_container = findViewById(R.id.weather_data_container);
 
         Log.v("MainActivity", "activity created1");
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        getLastLocation();
+        todays_date = QueryUtils.getCurrentDate();
+        weatherObj = ReadObjectFromFile(FILE_NAME);
+        //if(weatherObj == null || compareDates(todays_date,weatherObj.getTimestamp()) == false)
+        if(compareDates(todays_date,weatherObj.getTimestamp()) == false) {
+            Log.v(LOG_TAG, "On comparing, found false");
+            getLastLocation();
+        }
+
+        else {
+            displayWeatherData(weatherObj);
+            Log.v(LOG_TAG, "On comparing, found true");
+            Toast.makeText(this, "Displaying from file", Toast.LENGTH_LONG).show();
+        }
+
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if(compareDates(todays_date,weatherObj.getTimestamp()) == false) {
+                    Log.v(LOG_TAG, "On comparing, found false");
+                    getLastLocation();
+                }
+                else {
+                    Log.v(LOG_TAG, "On comparing, found true");
+                    displayWeatherData(weatherObj);
+                    Toast.makeText(MainActivity.this, "Displaying from file", Toast.LENGTH_LONG).show();
+                }
+                refreshLayout.setRefreshing(false);
+            }
+        });
 
 
+    }
 
+    private void displayWeatherData(WeatherData weather) {
+        desc.setText(weather.getDescription());
+        min.setText("Min: "+weather.getMinTemp());
+        max.setText("Max: "+weather.getMaxTemp());
+        lat.setText("Latitude: "+weather.getLat());
+        lon.setText("Longitude: "+weather.getLon());
+        timestamp.setText("Date: "+weather.getTimestamp());
+    }
+
+    private boolean compareDates(String todays_date, String date_from_file) {
+        return todays_date.equals(date_from_file);
     }
 
     @SuppressLint("MissingPermission")
@@ -88,7 +145,6 @@ public class MainActivity extends AppCompatActivity {
                                     LAT = location.getLatitude()+"";
                                     LON = location.getLongitude()+"";
                                     //String sample = request_url;
-
                                     //new weatherTask().execute();
                                     if(isNetworkAvailable()) {
                                         //EarthquakeAsyncTask task = new EarthquakeAsyncTask();
@@ -96,12 +152,21 @@ public class MainActivity extends AppCompatActivity {
                                         Log.v("MainActivity", "OLD URL: "+request_url);
                                         updateURL(LAT, LON);
                                         Log.v("MainActivity", "NEW URL: "+request_url);
+                                        weather_data_container.setVisibility(View.VISIBLE );
+                                        net.setVisibility(View.INVISIBLE);
                                         new EarthquakeAsyncTask().execute(request_url);
                                     }
 
                                     else {
-                                        net = findViewById(R.id.check_network);
+                                        weather_data_container.setVisibility(View.INVISIBLE );
                                         net.setVisibility(View.VISIBLE);
+                                        Log.v("MainActivity", "No connection");
+                                        net.setText("No connection");
+                                        Toast toast = Toast.makeText(getApplicationContext(),
+                                                "No internet connection.",
+                                                Toast.LENGTH_SHORT);
+
+                                        toast.show();
                                     }
                                 }
                             }
@@ -188,8 +253,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static void updateURL(String lat, String lon) {
+        if(appended)
+            return;
         request_url += "&lat="+lat+"&lon="+lon;
         Log.v("MainActivity", "New url: " + request_url);
+        appended  = true;
     }
 
     private class EarthquakeAsyncTask extends AsyncTask<String, Void, WeatherData> {
@@ -202,20 +270,20 @@ public class MainActivity extends AppCompatActivity {
             }
 
             WeatherData result = QueryUtils.fetchWeatherData(urls[0]);
+            WriteObjectToFile(result);
             return result;
         }
 
         @Override
         protected void onPostExecute(WeatherData weather) {
+            weather = ReadObjectFromFile(FILE_NAME);
+            Toast toast = null;
             if(weather != null) {
-
-                desc.setText(weather.getDescription());
-                min.setText("Min: "+weather.getMinTemp());
-                max.setText("Max: "+weather.getMaxTemp());
-                lat.setText("Latitude: "+LAT);
-                lon.setText("Longitude: "+LON);
+                //weather_data_container.setVisibility(View.VISIBLE);
+                //net.setVisibility(View.GONE);
+                displayWeatherData(weather);
+                toast.makeText(MainActivity.this , "Displaying refreshed data", Toast.LENGTH_LONG).show();
             }
-
         }
     }
     private boolean isNetworkAvailable() {
@@ -223,5 +291,43 @@ public class MainActivity extends AppCompatActivity {
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+    public void WriteObjectToFile(Object serObj) {
+        FileOutputStream fileOut = null;
+        try {
+            fileOut = openFileOutput(FILE_NAME, MODE_PRIVATE);
+            ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+            objectOut.writeObject(serObj);
+            objectOut.close();
+            Toast.makeText(this, "Saved to " + getFilesDir() + "/" + FILE_NAME,
+                    Toast.LENGTH_LONG).show();
+            Log.v("MainActivity", "Saving Object");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }finally {
+            if (fileOut != null) {
+                try {
+                    fileOut.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public WeatherData ReadObjectFromFile(String FILE_NAME) {
+        FileInputStream fis = null;
+        WeatherData weatherData = null;
+        try {
+            fis = openFileInput(FILE_NAME);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            weatherData = (WeatherData) ois.readObject();
+            Log.v("Weather Data is- ", "Description- "+weatherData.getDescription()+" Temp- "+weatherData.getMaxTemp()+" Epoch- "+weatherData.getTimestamp());
+            ois.close();
+        }catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return weatherData;
     }
 }
