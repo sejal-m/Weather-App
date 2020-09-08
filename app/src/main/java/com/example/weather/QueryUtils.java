@@ -57,19 +57,40 @@ public final class QueryUtils {
         }
         return weatherObject;
     }
+
+    private static WeatherData extractForecastJSON(String jsonResponse) {
+        if (TextUtils.isEmpty(jsonResponse)) {
+            return null;
+        }
+
+        WeatherData weatherObject = null;
+
+        try {
+            JSONObject baseJsonResponse = new JSONObject(jsonResponse);
+            JSONObject current = baseJsonResponse.getJSONObject("current");
+            long date = current.getLong("dt");
+            weatherObject = new WeatherData(epochToDay(date));
+        }
+        catch (JSONException e) {
+            Log.e("QueryUtils", "Problem parsing JSON ", e);
+        }
+        return weatherObject;
+    }
+
     private static String epochToDay(long timestamp) {
         Date d = new Date(timestamp * 1000L);
         SimpleDateFormat formatted = new SimpleDateFormat("dd/MM/yyyy");
         formatted.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
         return formatted.format(d);
     }
+
     private static String kelvinToCelsius(double temp) {
         temp -= 273.15;
         DecimalFormat temperatureFormat = new DecimalFormat("0.00");
         return temperatureFormat.format(temp)+" °C";
     }
 
-    public static WeatherData fetchWeatherData(String requestUrl) {
+    public static WeatherData fetchWeatherData(String requestUrl, int id) {
 
         URL url = createUrl(requestUrl);
 
@@ -80,9 +101,11 @@ public final class QueryUtils {
         } catch (IOException e) {
             Log.e(LOG_TAG, "Problem making the HTTP request.", e);
         }
-
-
-        WeatherData extractedData = extractJSON(jsonResponse);
+        WeatherData extractedData = null;
+        if(id == 0)
+            extractedData = extractJSON(jsonResponse);
+        else if(id == 1)
+            extractedData = extractForecastJSON(jsonResponse);
 
 
         return extractedData;

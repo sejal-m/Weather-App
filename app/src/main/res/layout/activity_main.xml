@@ -48,6 +48,13 @@
             android:layout_height="wrap_content"
             tools:text="28/08/2020" />
 
+        <Button
+            android:id="@+id/forecast_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Past five days forecast"
+            android:textAllCaps="true"/>
+
     </LinearLayout>
     <LinearLayout
         android:layout_width="wrap_content"

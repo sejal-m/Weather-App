@@ -1,5 +1,7 @@
 package com.example.weather;
 
+import android.webkit.WebSettings;
+
 import java.io.Serializable;
 
 public class WeatherData implements Serializable {
@@ -9,7 +11,16 @@ public class WeatherData implements Serializable {
     String description;
     String date;
 
-    public WeatherData(double lat, double lon,String minTemp, String maxTemp, String description, String time) {
+    public WeatherData(String date) {
+        this.date = date;
+        lat = 0.0;
+        lon = 0.0;
+        minTemp = "2";
+        maxTemp = "10";
+        description = "cloudy with a chance of meatballs";
+    }
+
+    public WeatherData(double lat, double lon, String minTemp, String maxTemp, String description, String time) {
         this.lat = lat;
         this.lon = lon;
         this.minTemp = minTemp;

@@ -15,6 +15,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,16 +45,18 @@ public class MainActivity extends AppCompatActivity {
     SwipeRefreshLayout refreshLayout;
     int PERMISSION_ID = 44;
 
-    TextView desc, min, max, lat, lon, net, sample, timestamp;
+    static TextView desc;
+    static TextView min;
+    static TextView max;
+    static TextView lat;
+    static TextView lon;
+    TextView net;
+    static TextView timestamp;
+    Button forecast;
     LinearLayout weather_data_container;
-    protected LocationManager locationManager;
     String LAT = "sample", LON = "sample";
-    protected Context context;
-    TextView txtLat;
+
     String todays_date;
-    String provider;
-    protected String latitude, longitude;
-    protected boolean gps_enabled, network_enabled;
 
     public static final String LOG_TAG = MainActivity.class.getName();
 
@@ -74,18 +77,24 @@ public class MainActivity extends AppCompatActivity {
         lat = findViewById(R.id.lat);
         lon = findViewById(R.id.lon);
         timestamp = findViewById(R.id.today);
+        forecast = findViewById(R.id.forecast_button);
         refreshLayout = findViewById(R.id.pullToRefresh);
         net = findViewById(R.id.check_network);
         weather_data_container = findViewById(R.id.weather_data_container);
 
-        Log.v("MainActivity", "activity created1");
+        forecast.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, ForecastActivity.class));
+            }
+        });
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         todays_date = QueryUtils.getCurrentDate();
         weatherObj = ReadObjectFromFile(FILE_NAME);
         //if(weatherObj == null || compareDates(todays_date,weatherObj.getTimestamp()) == false)
-        if(compareDates(todays_date,weatherObj.getTimestamp()) == false) {
+        if(weatherObj == null || compareDates(todays_date,weatherObj.getTimestamp()) == false) {
             Log.v(LOG_TAG, "On comparing, found false");
             getLastLocation();
         }
@@ -99,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if(compareDates(todays_date,weatherObj.getTimestamp()) == false) {
+                if(weatherObj == null || compareDates(todays_date,weatherObj.getTimestamp()) == false) {
                     Log.v(LOG_TAG, "On comparing, found false");
                     getLastLocation();
                 }
@@ -115,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void displayWeatherData(WeatherData weather) {
+    public static void displayWeatherData(WeatherData weather) {
         desc.setText(weather.getDescription());
         min.setText("Min: "+weather.getMinTemp());
         max.setText("Max: "+weather.getMaxTemp());
@@ -154,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
                                         Log.v("MainActivity", "NEW URL: "+request_url);
                                         weather_data_container.setVisibility(View.VISIBLE );
                                         net.setVisibility(View.INVISIBLE);
-                                        new EarthquakeAsyncTask().execute(request_url);
+                                        new WeatherAsyncTask().execute(request_url);
                                     }
 
                                     else {
@@ -260,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
         appended  = true;
     }
 
-    private class EarthquakeAsyncTask extends AsyncTask<String, Void, WeatherData> {
+    private class WeatherAsyncTask extends AsyncTask<String, Void, WeatherData> {
 
         @Override
         protected WeatherData doInBackground(String... urls) {
@@ -269,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
                 return null;
             }
 
-            WeatherData result = QueryUtils.fetchWeatherData(urls[0]);
+            WeatherData result = QueryUtils.fetchWeatherData(urls[0],0);
             WriteObjectToFile(result);
             return result;
         }
@@ -286,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    private boolean isNetworkAvailable() {
+    public boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
