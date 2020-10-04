@@ -15,12 +15,14 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -31,11 +33,13 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
 public class MainActivity extends AppCompatActivity {
-
+    int number = 0;
     FusedLocationProviderClient mFusedLocationClient;
+    SwipeRefreshLayout refreshLayout;
     int PERMISSION_ID = 44;
 
-    TextView desc, min, max, lat, lon, net;
+    TextView desc, min, max, lat, lon, net, sample;
+    LinearLayout weather_data_container;
     protected LocationManager locationManager;
     String LAT = "sample", LON = "sample";
     protected Context context;
@@ -60,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
         max = findViewById(R.id.max);
         lat = findViewById(R.id.lat);
         lon = findViewById(R.id.lon);
+        refreshLayout = findViewById(R.id.pullToRefresh);
+        net = findViewById(R.id.check_network);
+        weather_data_container = findViewById(R.id.weather_data_container);
 
         Log.v("MainActivity", "activity created1");
 
@@ -67,6 +74,13 @@ public class MainActivity extends AppCompatActivity {
 
         getLastLocation();
 
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getLastLocation();
+                refreshLayout.setRefreshing(false);
+            }
+        });
 
 
     }
@@ -83,8 +97,7 @@ public class MainActivity extends AppCompatActivity {
                                 if (location == null) {
                                     requestNewLocationData();
                                 } else {
-                                    //lat.setText("Latitude :"+location.getLatitude()+"");
-                                    //lon.setText("Longitude :"+location.getLongitude()+"");
+
                                     LAT = location.getLatitude()+"";
                                     LON = location.getLongitude()+"";
                                     //String sample = request_url;
@@ -96,12 +109,21 @@ public class MainActivity extends AppCompatActivity {
                                         Log.v("MainActivity", "OLD URL: "+request_url);
                                         updateURL(LAT, LON);
                                         Log.v("MainActivity", "NEW URL: "+request_url);
+                                        weather_data_container.setVisibility(View.VISIBLE );
+                                        net.setVisibility(View.INVISIBLE);
                                         new EarthquakeAsyncTask().execute(request_url);
                                     }
 
                                     else {
-                                        net = findViewById(R.id.check_network);
+                                        weather_data_container.setVisibility(View.INVISIBLE );
                                         net.setVisibility(View.VISIBLE);
+                                        Log.v("MainActivity", "No connection");
+                                        net.setText("No connection");
+                                        Toast toast = Toast.makeText(getApplicationContext(),
+                                                "No internet connection.",
+                                                Toast.LENGTH_SHORT);
+
+                                        toast.show();
                                     }
                                 }
                             }
@@ -208,12 +230,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(WeatherData weather) {
             if(weather != null) {
-
-                desc.setText(weather.getDescription());
-                min.setText("Min: "+weather.getMinTemp());
-                max.setText("Max: "+weather.getMaxTemp());
-                lat.setText("Latitude: "+LAT);
-                lon.setText("Longitude: "+LON);
+                //weather_data_container.setVisibility(View.VISIBLE);
+                //net.setVisibility(View.GONE);
+                desc.setText(weather.getDay_summary());
+                min.setText("Min: "+weather.getMin_temp());
+                max.setText("Max: "+weather.getMax_temp());
+                lat.setText("Latitude: "+weather.getLat());
+                lon.setText("Longitude: "+weather.getLon());
             }
 
         }
