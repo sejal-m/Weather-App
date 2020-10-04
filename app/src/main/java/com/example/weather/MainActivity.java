@@ -68,65 +68,111 @@ public class MainActivity extends AppCompatActivity {
         net = findViewById(R.id.check_network);
         weather_data_container = findViewById(R.id.weather_data_container);
 
-        Log.v("MainActivity", "activity created1");
+        Log.v("MainActivity", "activity created");
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        //getLastLocation();
-        if(isNetworkAvailable()) {
-            //EarthquakeAsyncTask task = new EarthquakeAsyncTask();
-            //task.execute(REQUEST_URL);
-            Log.v("MainActivity", "OLD URL: "+request_url);
-            updateURL(LAT, LON);
-            Log.v("MainActivity", "NEW URL: "+request_url);
-            weather_data_container.setVisibility(View.VISIBLE );
-            net.setVisibility(View.INVISIBLE);
-            new EarthquakeAsyncTask().execute(request_url);
-        }
+        if(updatedData(QueryUtils.getCurrentDate())) {
+            Toast toast = Toast.makeText(MainActivity.this,
+                    "ALready updated data for today",
+                    Toast.LENGTH_LONG);
+            Log.v("MainActivity","Already updated data");
 
+        }
         else {
-            weather_data_container.setVisibility(View.INVISIBLE );
-            net.setVisibility(View.VISIBLE);
-            Log.v("MainActivity", "No connection");
-            net.setText("No connection");
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    "No internet connection.",
-                    Toast.LENGTH_SHORT);
+            if(isNetworkAvailable()) {
+                //EarthquakeAsyncTask task = new EarthquakeAsyncTask();
+                //task.execute(REQUEST_URL);
+                Log.v("MainActivity", "OLD URL: "+request_url);
+                //updateURL(LAT, LON);
+                Log.v("MainActivity", "NEW URL: "+request_url);
+                weather_data_container.setVisibility(View.VISIBLE );
+                net.setVisibility(View.INVISIBLE);
+                new EarthquakeAsyncTask().execute(request_url);
+            }
 
-            toast.show();
+            else {
+                weather_data_container.setVisibility(View.INVISIBLE );
+                net.setVisibility(View.VISIBLE);
+                Log.v("MainActivity", "No connection");
+                net.setText("No connection");
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        "No internet connection.",
+                        Toast.LENGTH_SHORT);
+
+                toast.show();
+            }
         }
+        //getLastLocation();
 
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 //getLastLocation();
-                if(isNetworkAvailable()) {
-                    //EarthquakeAsyncTask task = new EarthquakeAsyncTask();
-                    //task.execute(REQUEST_URL);
-                    Log.v("MainActivity", "OLD URL: "+request_url);
-                    updateURL(LAT, LON);
-                    Log.v("MainActivity", "NEW URL: "+request_url);
-                    weather_data_container.setVisibility(View.VISIBLE );
-                    net.setVisibility(View.INVISIBLE);
-                    new EarthquakeAsyncTask().execute(request_url);
-                }
-
-                else {
-                    weather_data_container.setVisibility(View.INVISIBLE );
-                    net.setVisibility(View.VISIBLE);
-                    Log.v("MainActivity", "No connection");
-                    net.setText("No connection");
+                if(updatedData(QueryUtils.getCurrentDate())) {
                     Toast toast = Toast.makeText(getApplicationContext(),
-                            "No internet connection.",
-                            Toast.LENGTH_SHORT);
+                            "ALready updated data for today",
+                            Toast.LENGTH_LONG);
+                    Log.v("MainActivity","Already updated data");
+                }
+                else {
+                    if(isNetworkAvailable()) {
+                        //EarthquakeAsyncTask task = new EarthquakeAsyncTask();
+                        //task.execute(REQUEST_URL);
+                        Log.v("MainActivity", "OLD URL: "+request_url);
+                        //updateURL(LAT, LON);
+                        Log.v("MainActivity", "NEW URL: "+request_url);
+                        weather_data_container.setVisibility(View.VISIBLE );
+                        net.setVisibility(View.INVISIBLE);
+                        new EarthquakeAsyncTask().execute(request_url);
+                    }
 
-                    toast.show();
+                    else {
+                        weather_data_container.setVisibility(View.INVISIBLE );
+                        net.setVisibility(View.VISIBLE);
+                        Log.v("MainActivity", "No connection");
+                        net.setText("No connection");
+                        Toast toast = Toast.makeText(getApplicationContext(),
+                                "No internet connection.",
+                                Toast.LENGTH_SHORT);
+
+                        toast.show();
+                    }
                 }
                 refreshLayout.setRefreshing(false);
             }
         });
 
 
+    }
+
+    private boolean updatedData(String currentDate) {
+        String fetchedDate = "";
+
+        WeatherDbHelper mDbHelper = new WeatherDbHelper(this);
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+        String[] projection = {WeatherContract.WeatherEntry.COLUMN_DATE};
+
+        Cursor cursor = db.query(
+                WeatherContract.WeatherEntry.TABLE_NAME,   // The table to query
+                projection,            // The columns to return
+                null,                  // The columns for the WHERE clause
+                null,                  // The values for the WHERE clause
+                null,                  // Don't group the rows
+                null,                  // Don't filter by row groups
+                null);                   // The sort order
+
+        try {
+            int dateColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATE);
+            while (cursor.moveToNext())
+                fetchedDate = cursor.getString(dateColumnIndex);
+        }
+        finally {
+            cursor.close();
+        }
+        Log.v("MainActivity",currentDate.equals(fetchedDate)+"");
+        return currentDate.equals(fetchedDate);
     }
 
     /*@SuppressLint("MissingPermission")
@@ -251,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
             getLastLocation();
         }
 
-    }*/
+    } */
 
     public static void updateURL(String lat, String lon) {
         request_url += "&lat="+lat+"&lon="+lon;
@@ -288,11 +334,12 @@ public class MainActivity extends AppCompatActivity {
         // you will actually use after this query.
         String[] projection = {
                 WeatherContract.WeatherEntry._ID,
+                WeatherContract.WeatherEntry.COLUMN_DATE,
                 WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
                 WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
                 WeatherContract.WeatherEntry.COLUMN_SUMMARY };
 
-        // Perform a query on the pets table
+        // Perform a query on the weather table
         Cursor cursor = db.query(
                 WeatherContract.WeatherEntry.TABLE_NAME,   // The table to query
                 projection,            // The columns to return
@@ -312,12 +359,14 @@ public class MainActivity extends AppCompatActivity {
             // In the while loop below, iterate through the rows of the cursor and display
             // the information from each column in this order.
             displayView.append(WeatherContract.WeatherEntry._ID + " - " +
+                    WeatherContract.WeatherEntry.COLUMN_DATE+ " - " +
                     WeatherContract.WeatherEntry.COLUMN_MAX_TEMP + " - " +
                     WeatherContract.WeatherEntry.COLUMN_MIN_TEMP+ " - " +
                     WeatherContract.WeatherEntry.COLUMN_SUMMARY + "\n");
 
             // Figure out the index of each column
             int idColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry._ID);
+            int dateColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATE);
             int maxColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP);
             int minColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP);
             int summaryColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_SUMMARY);
@@ -327,11 +376,13 @@ public class MainActivity extends AppCompatActivity {
                 // Use that index to extract the String or Int value of the word
                 // at the current row the cursor is on.
                 int currentID = cursor.getInt(idColumnIndex);
+                String currentDate = cursor.getString(dateColumnIndex);
                 String currentMax = cursor.getString(maxColumnIndex);
                 String currentMin = cursor.getString(minColumnIndex);
                 String currentSummary = cursor.getString(summaryColumnIndex);
                 // Display the values from each column of the current row in the cursor in the TextView
                 displayView.append(("\n" + currentID + " - " +
+                        currentDate + " - " +
                         currentMax + " - " +
                         currentMin + " - " +
                         currentSummary));

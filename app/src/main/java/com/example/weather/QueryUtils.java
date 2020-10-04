@@ -15,6 +15,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 import static com.example.weather.MainActivity.LOG_TAG;
 
@@ -45,14 +48,28 @@ public final class QueryUtils {
             String description = weather.getString("description");
             double tempMin = main.getDouble("temp_min");
             double tempMax = main.getDouble("temp_max");
+            long timestamp = baseJsonResponse.getLong("dt");
 
             Log.v("MainActivity", "lon = "+lon+" ,lat = "+lat);
-            weatherObject = new WeatherData(lon, lat, kelvinToCelsius(tempMin), kelvinToCelsius(tempMax), description);
+            weatherObject = new WeatherData(lon, lat, kelvinToCelsius(tempMin), kelvinToCelsius(tempMax), description, epochToDay(timestamp));
         }
         catch (JSONException e) {
             Log.e("QueryUtils", "Problem parsing JSON ", e);
         }
         return weatherObject;
+    }
+
+    public static String getCurrentDate() {
+        Date date = new Date();
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+        return dateFormatter.format(date);
+    }
+
+    private static String epochToDay(long timestamp) {
+        Date d = new Date(timestamp * 1000L);
+        SimpleDateFormat formatted = new SimpleDateFormat("dd/MM/yyyy");
+        formatted.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+        return formatted.format(d);
     }
 
     private static String kelvinToCelsius(double temp) {

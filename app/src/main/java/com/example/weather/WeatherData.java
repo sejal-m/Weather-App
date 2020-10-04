@@ -12,12 +12,13 @@ public class WeatherData implements Serializable {
     String sunrise, sunset;
     String day_summary;
 
-    public WeatherData(double lon, double lat, String min_temp, String max_temp, String day_summary) {
+    public WeatherData(double lon, double lat, String min_temp, String max_temp, String day_summary, String date) {
         this.lat = lat;
         this.lon = lon;
         this.min_temp = min_temp;
         this.max_temp = max_temp;
         this.day_summary = day_summary;
+        this.date = date;
     }
 
     public WeatherData(double lat, double lon, double location_id, String date, double wind_speed, double humidity, double precipitation, String min_temp, String max_temp, String visibility_worst, String sunrise, String sunset, String day_summary) {

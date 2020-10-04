@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class WeatherDbHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "weather_sample.db";
+    private static final String DATABASE_NAME = "flurry-database.db";
     /**
      * Database version - have to implement if we change the schema.
      */
