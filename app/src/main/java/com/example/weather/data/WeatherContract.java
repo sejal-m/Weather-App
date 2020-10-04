@@ -10,7 +10,7 @@ public final class WeatherContract {
     public static final class WeatherEntry implements BaseColumns {
 
         /** Name of database table for weather */
-        public static final String TABLE_NAME = "weather";
+        public static final String TABLE_NAME = "weather2";
 
         public static final String _ID = BaseColumns._ID;
 

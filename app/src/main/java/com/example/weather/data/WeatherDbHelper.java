@@ -21,9 +21,9 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
         //CREATE TABLE weather
         String SQL_CREATE_WEATHER_TABLE = "CREATE TABLE "+ WeatherContract.WeatherEntry.TABLE_NAME + "("
                 + WeatherContract.WeatherEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + WeatherContract.WeatherEntry.COLUMN_DATE + " TEXT NOT NULL, "
-                + WeatherContract.WeatherEntry.COLUMN_MIN_TEMP + " NUMERIC NOT NULL, "
-                + WeatherContract.WeatherEntry.COLUMN_MAX_TEMP + " NUMERIC NOT NULL, "
+                + WeatherContract.WeatherEntry.COLUMN_DATE + " TEXT , "
+                + WeatherContract.WeatherEntry.COLUMN_MIN_TEMP + " TEXT NOT NULL, "
+                + WeatherContract.WeatherEntry.COLUMN_MAX_TEMP + " TEXT NOT NULL, "
                 + WeatherContract.WeatherEntry.COLUMN_SUMMARY + " TEXT );";
         sqLiteDatabase.execSQL(SQL_CREATE_WEATHER_TABLE);
     }
