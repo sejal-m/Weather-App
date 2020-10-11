@@ -61,13 +61,13 @@ public final class QueryUtils {
 
     public static String getCurrentDate() {
         Date date = new Date();
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
         return dateFormatter.format(date);
     }
 
     private static String epochToDay(long timestamp) {
         Date d = new Date(timestamp * 1000L);
-        SimpleDateFormat formatted = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat formatted = new SimpleDateFormat("dd-MM-yyyy");
         formatted.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
         return formatted.format(d);
     }
@@ -75,7 +75,7 @@ public final class QueryUtils {
     private static String kelvinToCelsius(double temp) {
         temp -= 273.15;
         DecimalFormat temperatureFormat = new DecimalFormat("0.00");
-        return temperatureFormat.format(temp)+" °C";
+        return temperatureFormat.format(temp)+" °";
     }
 
     public static WeatherData fetchWeatherData(String requestUrl) {
