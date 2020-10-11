@@ -10,6 +10,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +24,7 @@ import com.google.android.gms.location.LocationServices;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     SwipeRefreshLayout refreshLayout;
     int PERMISSION_ID = 44;
     TextView date_view, temp, min, max, desc;
+    LinearLayout base_container;
 
     public static void updateURL(String lat, String lon) {
         request_url += "&lat=" + lat + "&lon=" + lon;
@@ -52,67 +55,84 @@ public class MainActivity extends AppCompatActivity {
         date_view = findViewById(R.id.date_view);
         temp = findViewById(R.id.temp);
         refreshLayout = findViewById(R.id.pullToRefresh);
+        base_container = findViewById(R.id.base_container);
+
+        updateBackground();
         //net = findViewById(R.id.check_network);
 
         Log.v("MainActivity", "activity created");
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        /* if(updatedData(QueryUtils.getCurrentDate())) {
+        if(updatedData(QueryUtils.getCurrentDate())) {
             Toast toast = Toast.makeText(MainActivity.this,
                     "ALready updated data for today",
                     Toast.LENGTH_LONG);
-            desc.setText("Already updated for today");
+            //desc.setText("Already updated for today");
             Log.v("MainActivity","Already updated data");
-
-        } */
-        //else {
-        if (isNetworkAvailable()) {
-            //EarthquakeAsyncTask task = new EarthquakeAsyncTask();
-            //task.execute(REQUEST_URL);
-            Log.v("MainActivity", "OLD URL: " + request_url);
-            //updateURL(LAT, LON);
-            Log.v("MainActivity", "NEW URL: " + request_url);
-
-            new EarthquakeAsyncTask().execute(request_url);
-        } else {
-
-            Log.v("MainActivity", "No connection");
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    "No internet connection.",
-                    Toast.LENGTH_SHORT);
-
-            toast.show();
+            displayDatabaseInfo();
+        }
+        else {
+            if (isNetworkAvailable()) {
+                //EarthquakeAsyncTask task = new EarthquakeAsyncTask();
+                //task.execute(REQUEST_URL);
+                Log.v("MainActivity", "OLD URL: " + request_url);
+                //updateURL(LAT, LON);
+                Log.v("MainActivity", "NEW URL: " + request_url);
+                new EarthquakeAsyncTask().execute(request_url);
+            } else {
+                Log.v("MainActivity", "No connection");
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        "No internet connection.",
+                        Toast.LENGTH_SHORT);
+                toast.show();
+            }
         }
 
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 //getLastLocation();
-                if (isNetworkAvailable()) {
-                    //EarthquakeAsyncTask task = new EarthquakeAsyncTask();
-                    //task.execute(REQUEST_URL);
-                    Log.v("MainActivity", "OLD URL: " + request_url);
-                    //updateURL(LAT, LON);
-                    Log.v("MainActivity", "NEW URL: " + request_url);
-
-                    new EarthquakeAsyncTask().execute(request_url);
-                } else {
-
-
-                    Log.v("MainActivity", "No connection");
-
-                    Toast toast = Toast.makeText(getApplicationContext(),
-                            "No internet connection.",
-                            Toast.LENGTH_SHORT);
-
-                    toast.show();
+                if(updatedData(QueryUtils.getCurrentDate())) {
+                    Toast toast = Toast.makeText(MainActivity.this,
+                            "ALready updated data for today",
+                            Toast.LENGTH_LONG);
+                    //desc.setText("Already updated for today");
+                    Log.v("MainActivity","Already updated data");
+                    displayDatabaseInfo();
+                }
+                else {
+                    if (isNetworkAvailable()) {
+                        //EarthquakeAsyncTask task = new EarthquakeAsyncTask();
+                        //task.execute(REQUEST_URL);
+                        Log.v("MainActivity", "OLD URL: " + request_url);
+                        //updateURL(LAT, LON);
+                        Log.v("MainActivity", "NEW URL: " + request_url);
+                        new EarthquakeAsyncTask().execute(request_url);
+                    } else {
+                        Log.v("MainActivity", "No connection");
+                        Toast toast = Toast.makeText(getApplicationContext(),
+                                "No internet connection.",
+                                Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
                 }
                 refreshLayout.setRefreshing(false);
             }
         });
 
 
+    }
+
+    private void updateBackground() {
+        Calendar c = Calendar.getInstance();
+        int timeOfDay = c.get(Calendar.HOUR_OF_DAY);
+
+        if(timeOfDay >= 0 && timeOfDay < 12){
+            base_container.setBackgroundResource(R.drawable.day_wallpaper);
+        }else if(timeOfDay >= 12 && timeOfDay < 24){
+            base_container.setBackgroundResource(R.drawable.evening_wallpaper);
+        }
     }
 
     private boolean updatedData(String currentDate) {
@@ -220,9 +240,14 @@ public class MainActivity extends AppCompatActivity {
             }
 
             SimpleDateFormat date_to_string = new SimpleDateFormat("EEE, dd MMM, yyyy");
+
             desc.setText(currentSummary);
-            min.setText(currentMin);
-            max.setText(currentMax);
+            min.setText("min "+currentMin);
+            max.setText("max "+currentMax);
+            double avg_temp = ( Double.parseDouble(currentMin.substring(0,currentMin.indexOf("°"))) +
+                              Double.parseDouble(currentMax.substring(0,currentMax.indexOf("°"))) )/2.0;
+            //Log.v("MainActivity",Double.toString(avg_temp));
+            temp.setText(Integer.toString((int)avg_temp));
             date_view.setText(date_to_string.format(date));
 
             // Iterate through all the returned rows in the cursor

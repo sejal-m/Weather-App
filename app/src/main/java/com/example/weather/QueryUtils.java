@@ -75,7 +75,7 @@ public final class QueryUtils {
     private static String kelvinToCelsius(double temp) {
         temp -= 273.15;
         DecimalFormat temperatureFormat = new DecimalFormat("0.00");
-        return temperatureFormat.format(temp)+" °";
+        return temperatureFormat.format(temp)+"°";
     }
 
     public static WeatherData fetchWeatherData(String requestUrl) {
