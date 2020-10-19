@@ -7,34 +7,38 @@ public class WeatherData implements Serializable {
     double lat, lon;
     double location_id;
     String date;
-    double wind_speed,humidity,precipitation;
-    String min_temp, max_temp, visibility_worst;
+    double min_temp, max_temp;
+    double wind_speed, wind_direction, wind_gust;
+    double precipitation, precipitation_type, precipitation_probability;
+    String visibility;
     String sunrise, sunset;
-    String day_summary;
+    String weather_code;
 
-    public WeatherData(double lon, double lat, String min_temp, String max_temp, String day_summary, String date) {
-        this.lat = lat;
-        this.lon = lon;
-        this.min_temp = min_temp;
-        this.max_temp = max_temp;
-        this.day_summary = day_summary;
-        this.date = date;
-    }
-
-    public WeatherData(double lat, double lon, double location_id, String date, double wind_speed, double humidity, double precipitation, String min_temp, String max_temp, String visibility_worst, String sunrise, String sunset, String day_summary) {
+    public WeatherData(double lat, double lon, double location_id, String date, double min_temp, double max_temp, double wind_speed, double wind_direction, double wind_gust, double precipitation, double precipitation_type, double precipitation_probability, String visibility, String sunrise, String sunset, String weather_code) {
         this.lat = lat;
         this.lon = lon;
         this.location_id = location_id;
         this.date = date;
-        this.wind_speed = wind_speed;
-        this.humidity = humidity;
-        this.precipitation = precipitation;
         this.min_temp = min_temp;
         this.max_temp = max_temp;
-        this.visibility_worst = visibility_worst;
+        this.wind_speed = wind_speed;
+        this.wind_direction = wind_direction;
+        this.wind_gust = wind_gust;
+        this.precipitation = precipitation;
+        this.precipitation_type = precipitation_type;
+        this.precipitation_probability = precipitation_probability;
+        this.visibility = visibility;
         this.sunrise = sunrise;
         this.sunset = sunset;
-        this.day_summary = day_summary;
+        this.weather_code = weather_code;
+    }
+
+    public WeatherData(String date, double min_temp, double max_temp, double precipitation_probability, String weather_code) {
+        this.date = date;
+        this.min_temp = min_temp;
+        this.max_temp = max_temp;
+        this.precipitation_probability = precipitation_probability;
+        this.weather_code = weather_code;
     }
 
     public double getLat() {
@@ -53,28 +57,40 @@ public class WeatherData implements Serializable {
         return date;
     }
 
+    public double getMin_temp() {
+        return min_temp;
+    }
+
+    public double getMax_temp() {
+        return max_temp;
+    }
+
     public double getWind_speed() {
         return wind_speed;
     }
 
-    public double getHumidity() {
-        return humidity;
+    public double getWind_direction() {
+        return wind_direction;
+    }
+
+    public double getWind_gust() {
+        return wind_gust;
     }
 
     public double getPrecipitation() {
         return precipitation;
     }
 
-    public String getMin_temp() {
-        return min_temp;
+    public double getPrecipitation_type() {
+        return precipitation_type;
     }
 
-    public String getMax_temp() {
-        return max_temp;
+    public double getPrecipitation_probability() {
+        return precipitation_probability;
     }
 
-    public String getVisibility_worst() {
-        return visibility_worst;
+    public String getVisibility() {
+        return visibility;
     }
 
     public String getSunrise() {
@@ -85,8 +101,8 @@ public class WeatherData implements Serializable {
         return sunset;
     }
 
-    public String getDay_summary() {
-        return day_summary;
+    public String getWeather_code() {
+        return weather_code;
     }
 }
 

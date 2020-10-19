@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class WeatherDbHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "flurry-database.db";
+    private static final String DATABASE_NAME = "flurry-database2.db";
     /**
      * Database version - have to implement if we change the schema.
      */
@@ -21,9 +21,10 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
         //CREATE TABLE weather
         String SQL_CREATE_WEATHER_TABLE = "CREATE TABLE "+ WeatherContract.WeatherEntry.TABLE_NAME + "("
                 + WeatherContract.WeatherEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + WeatherContract.WeatherEntry.COLUMN_DATE + " TEXT , "
-                + WeatherContract.WeatherEntry.COLUMN_MIN_TEMP + " TEXT NOT NULL, "
-                + WeatherContract.WeatherEntry.COLUMN_MAX_TEMP + " TEXT NOT NULL, "
+                + WeatherContract.WeatherEntry.COLUMN_DATE + " TEXT, "
+                + WeatherContract.WeatherEntry.COLUMN_MIN_TEMP + " REAL NOT NULL, "
+                + WeatherContract.WeatherEntry.COLUMN_MAX_TEMP + " REAL NOT NULL, "
+                + WeatherContract.WeatherEntry.COLUMN_PRECIPITATION_PROBABILITY + " REAL NOT NULL, "
                 + WeatherContract.WeatherEntry.COLUMN_SUMMARY + " TEXT );";
         sqLiteDatabase.execSQL(SQL_CREATE_WEATHER_TABLE);
     }

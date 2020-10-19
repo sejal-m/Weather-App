@@ -40,18 +40,13 @@ public final class QueryUtils {
 
         try {
             JSONObject baseJsonResponse = new JSONObject(weatherJSON);
-            JSONObject weather = baseJsonResponse.getJSONArray("weather").getJSONObject(0);
-            JSONObject main = baseJsonResponse.getJSONObject("main");
-            JSONObject coord = baseJsonResponse.getJSONObject("coord");
-            double lon = coord.getDouble("lon");
-            double lat = coord.getDouble("lat");
-            String description = weather.getString("description");
-            double tempMin = main.getDouble("temp_min");
-            double tempMax = main.getDouble("temp_max");
-            long timestamp = baseJsonResponse.getLong("dt");
-
-            Log.v("MainActivity", "lon = "+lon+" ,lat = "+lat);
-            weatherObject = new WeatherData(lon, lat, kelvinToCelsius(tempMin), kelvinToCelsius(tempMax), description, epochToDay(timestamp));
+            String date = baseJsonResponse.getString("date");
+            JSONObject data = baseJsonResponse.getJSONObject("data");
+            double temp_min = data.getDouble("temp_min");
+            double temp_max = data.getDouble("temp_max");
+            double prec_prob = data.getDouble("precipitation_probability");
+            String weather_code = data.getString("weather_code");
+            weatherObject = new WeatherData(date,temp_min,temp_max, prec_prob, weather_code);
         }
         catch (JSONException e) {
             Log.e("QueryUtils", "Problem parsing JSON ", e);

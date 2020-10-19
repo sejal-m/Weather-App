@@ -1,15 +1,16 @@
 package com.example.weather;
 
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,8 +20,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.weather.data.WeatherContract;
 import com.example.weather.data.WeatherDbHelper;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -29,20 +29,16 @@ import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
+    Dialog myDialog;
     public static final String LOG_TAG = MainActivity.class.getName();
-    private static String request_url = "https://api.openweathermap.org/data/2.5/weather?appid=fe21f6f759504260a7aa9a4c3b6a2492&lat=13.0266981&lon=77.5465897";
-    protected LocationManager locationManager;
-    protected Context context;
-    FusedLocationProviderClient mFusedLocationClient;
+    //private static String request_url = "https://api.openweathermap.org/data/2.5/weather?appid=fe21f6f759504260a7aa9a4c3b6a2492&lat=13.0266981&lon=77.5465897";
+    private static String request_url = "http://3.0.50.164/weather/forecast.php";
     SwipeRefreshLayout refreshLayout;
-    int PERMISSION_ID = 44;
     TextView date_view, temp, min, max, desc;
+    TextView prec_probability;
     LinearLayout base_container;
-
-    public static void updateURL(String lat, String lon) {
-        request_url += "&lat=" + lat + "&lon=" + lon;
-        Log.v("MainActivity", "New url: " + request_url);
-    }
+    private BottomSheetBehavior mBottomSheetBehavior;
+    private int updated = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,21 +52,48 @@ public class MainActivity extends AppCompatActivity {
         temp = findViewById(R.id.temp);
         refreshLayout = findViewById(R.id.pullToRefresh);
         base_container = findViewById(R.id.base_container);
+        prec_probability = findViewById(R.id.prec_probability);
+        myDialog = new Dialog(this);
+        View bottomSheet = findViewById(R.id.bottom_sheet);
+        mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        mBottomSheetBehavior.setHideable(false);
+
+        /* mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                switch (newState) {
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                        sample.setText("Collapsed");
+                        break;
+                    case BottomSheetBehavior.STATE_DRAGGING:
+                        sample.setText("Dragging...");
+                        break;
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                        sample.setText("Expanded");
+                        break;
+                    case BottomSheetBehavior.STATE_HIDDEN:
+                        sample.setText("Hidden");
+                        break;
+                    case BottomSheetBehavior.STATE_SETTLING:
+                        sample.setText("Settling...");
+                        break;
+                }
+            }
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                sample.setText("Sliding...");
+            }
+        }); */
 
         updateBackground();
-        //net = findViewById(R.id.check_network);
 
-        Log.v("MainActivity", "activity created");
-
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        if(updatedData(QueryUtils.getCurrentDate())) {
+        if(updated != 0 && updatedData(QueryUtils.getCurrentDate())) {
             Toast toast = Toast.makeText(MainActivity.this,
                     "ALready updated data for today",
                     Toast.LENGTH_LONG);
-            //desc.setText("Already updated for today");
             Log.v("MainActivity","Already updated data");
-            displayDatabaseInfo();
+            //displayDatabaseInfo();
+            new WeatherAsyncTask().execute(request_url);
         }
         else {
             if (isNetworkAvailable()) {
@@ -79,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.v("MainActivity", "OLD URL: " + request_url);
                 //updateURL(LAT, LON);
                 Log.v("MainActivity", "NEW URL: " + request_url);
-                new EarthquakeAsyncTask().execute(request_url);
+                new WeatherAsyncTask().execute(request_url);
             } else {
                 Log.v("MainActivity", "No connection");
                 Toast toast = Toast.makeText(getApplicationContext(),
@@ -108,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.v("MainActivity", "OLD URL: " + request_url);
                         //updateURL(LAT, LON);
                         Log.v("MainActivity", "NEW URL: " + request_url);
-                        new EarthquakeAsyncTask().execute(request_url);
+                        new WeatherAsyncTask().execute(request_url);
                     } else {
                         Log.v("MainActivity", "No connection");
                         Toast toast = Toast.makeText(getApplicationContext(),
@@ -124,6 +147,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void ShowPopup(View v) {
+        myDialog.setContentView(R.layout.popup_view);
+        myDialog.show();
+        myDialog.setCanceledOnTouchOutside(true);
+    }
+
     private void updateBackground() {
         Calendar c = Calendar.getInstance();
         int timeOfDay = c.get(Calendar.HOUR_OF_DAY);
@@ -136,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean updatedData(String currentDate) {
+        updated = 1;
         String fetchedDate = "";
 
         WeatherDbHelper mDbHelper = new WeatherDbHelper(this);
@@ -143,8 +173,7 @@ public class MainActivity extends AppCompatActivity {
 
         String[] projection = {WeatherContract.WeatherEntry.COLUMN_DATE};
 
-        Cursor cursor = null;              // The sort order
-
+        Cursor cursor = null;
         try {
             cursor = db.query(
                     WeatherContract.WeatherEntry.TABLE_NAME,   // The table to query
@@ -165,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
         return currentDate.equals(fetchedDate);
     }
 
-    public void insertData(String date, String max, String min, String summary) {
+    public void insertData(WeatherData weather) {
 
         WeatherDbHelper mDbHelper = new WeatherDbHelper(this);
 
@@ -173,35 +202,25 @@ public class MainActivity extends AppCompatActivity {
 
         // Create a new map of values, where column names are the keys
         ContentValues values = new ContentValues();
-        values.put(WeatherContract.WeatherEntry.COLUMN_DATE, date);
-        values.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, max);
-        values.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, min);
-        values.put(WeatherContract.WeatherEntry.COLUMN_SUMMARY, summary);
+        values.put(WeatherContract.WeatherEntry.COLUMN_DATE, weather.getDate());
+        values.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, weather.getMax_temp());
+        values.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, weather.getMin_temp());
+        values.put(WeatherContract.WeatherEntry.COLUMN_PRECIPITATION_PROBABILITY, weather.getPrecipitation_probability());
+        values.put(WeatherContract.WeatherEntry.COLUMN_SUMMARY, weather.getWeather_code());
         // Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, values);
+        db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, values);
     }
 
     private void displayDatabaseInfo() {
-        // To access our database, we instantiate our subclass of SQLiteOpenHelper
-        // and pass the context, which is the current activity.
         WeatherDbHelper mDbHelper = new WeatherDbHelper(this);
-
-        // Create and/or open a database to read from it
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
-        // Perform this raw SQL query "SELECT * FROM weather"
-        //Cursor cursor = db.rawQuery("SELECT * FROM " + WeatherContract.WeatherEntry.TABLE_NAME, null);
-
-        // Define a projection that specifies which columns from the database
-        // you will actually use after this query.
         String[] projection = {
                 WeatherContract.WeatherEntry._ID,
                 WeatherContract.WeatherEntry.COLUMN_DATE,
                 WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
                 WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+                WeatherContract.WeatherEntry.COLUMN_PRECIPITATION_PROBABILITY,
                 WeatherContract.WeatherEntry.COLUMN_SUMMARY};
-
-        // Perform a query on the weather table
         Cursor cursor = db.query(
                 WeatherContract.WeatherEntry.TABLE_NAME,   // The table to query
                 projection,            // The columns to return
@@ -211,26 +230,21 @@ public class MainActivity extends AppCompatActivity {
                 null,                  // Don't filter by row groups
                 null);                   // The sort order
 
-        TextView displayView = (TextView) findViewById(R.id.date_view);
-
         try {
-
-            //move cursor to latest position in database
             cursor.moveToPosition(cursor.getCount() - 1);
-
-            // Figure out the index of each column
-            int idColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry._ID);
             int dateColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATE);
             int maxColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP);
             int minColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP);
+            int prec_probabilityColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_PRECIPITATION_PROBABILITY);
             int summaryColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_SUMMARY);
 
             String currentDate = cursor.getString(dateColumnIndex);
-            String currentMax = cursor.getString(maxColumnIndex);
-            String currentMin = cursor.getString(minColumnIndex);
+            double currentMax = cursor.getDouble(maxColumnIndex);
+            double currentMin = cursor.getDouble(minColumnIndex);
+            String currentPrecProbability = cursor.getString(prec_probabilityColumnIndex);
             String currentSummary = cursor.getString(summaryColumnIndex);
 
-            SimpleDateFormat string_to_date = new SimpleDateFormat("dd-MM-yyyy");
+            SimpleDateFormat string_to_date = new SimpleDateFormat("yyyy-MM-dd");
             Date date = null;
             try {
                 date = string_to_date.parse(currentDate);
@@ -242,34 +256,13 @@ public class MainActivity extends AppCompatActivity {
             SimpleDateFormat date_to_string = new SimpleDateFormat("EEE, dd MMM, yyyy");
 
             desc.setText(currentSummary);
-            min.setText("min "+currentMin);
-            max.setText("max "+currentMax);
-            double avg_temp = ( Double.parseDouble(currentMin.substring(0,currentMin.indexOf("°"))) +
-                              Double.parseDouble(currentMax.substring(0,currentMax.indexOf("°"))) )/2.0;
-            //Log.v("MainActivity",Double.toString(avg_temp));
-            temp.setText(Integer.toString((int)avg_temp));
+            min.setText("min "+currentMin+"°");
+            max.setText("max "+currentMax+"°");
+            prec_probability.setText(currentPrecProbability+ "% chance of precipitation today");
+            temp.setText(Integer.toString((int) (( currentMin + currentMax ) / 2)));
             date_view.setText(date_to_string.format(date));
 
-            // Iterate through all the returned rows in the cursor
-            /*while (cursor.moveToNext()) {
-                // Use that index to extract the String or Int value of the word
-                // at the current row the cursor is on.
-                int currentID = cursor.getInt(idColumnIndex);
-                String currentDate = cursor.getString(dateColumnIndex);
-                String currentMax = cursor.getString(maxColumnIndex);
-                String currentMin = cursor.getString(minColumnIndex);
-                String currentSummary = cursor.getString(summaryColumnIndex);
-                // Display the values from each column of the current row in the cursor in the TextView
-                displayView.append(("\n" + currentID + " - " +
-                        currentDate + " - " +
-                        currentMax + " - " +
-                        currentMin + " - " +
-                        currentSummary));
-            }*/
-
         } finally {
-            // Always close the cursor when you're done reading from it. This releases all its
-            // resources and makes it invalid.
             cursor.close();
         }
     }
@@ -281,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    private class EarthquakeAsyncTask extends AsyncTask<String, Void, WeatherData> {
+    private class WeatherAsyncTask extends AsyncTask<String, Void, WeatherData> {
 
         @Override
         protected WeatherData doInBackground(String... urls) {
@@ -297,14 +290,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(WeatherData weather) {
             if (weather != null) {
-                //weather_data_container.setVisibility(View.VISIBLE);
-                //net.setVisibility(View.GONE);
-                /* desc.setText(weather.getDay_summary());
-                min.setText("Min: "+weather.getMin_temp());
-                max.setText("Max: "+weather.getMax_temp());
-                lat.setText("Latitude: "+weather.getLat());
-                lon.setText("Longitude: "+weather.getLon()); */
-                insertData(weather.getDate(), weather.getMax_temp(), weather.getMin_temp(), weather.getDay_summary());
+                insertData(weather);
                 displayDatabaseInfo();
             }
 
