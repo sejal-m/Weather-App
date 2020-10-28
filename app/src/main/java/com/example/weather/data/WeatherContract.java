@@ -20,9 +20,27 @@ public final class WeatherContract {
 
         public static final String COLUMN_MAX_TEMP = "max";
 
+        public static final String COLUMN_HUMIDITY = "humidity";
+
+        public static final String COLUMN_WIND_SPEED = "wind_speed";
+
+        public static final String COLUMN_WIND_DIRECTION = "wind_direction";
+
+        public static final String COLUMN_WIND_GUST = "wind_gust";
+
+        public static final String COLUMN_PRECIPITATION = "prec";
+
+        public static final String COLUMN_PRECIPITATION_TYPE = "prec_type";
+
         public static final String COLUMN_PRECIPITATION_PROBABILITY = "prec_probability";
 
-        public static final String COLUMN_SUMMARY = "summary";
+        public static final String COLUMN_SUNRISE = "sunrise";
+
+        public static final String COLUMN_SUNSET = "sunset";
+
+        public static final String COLUMN_VISIBILITY = "visibility";
+
+        public static final String COLUMN_SUMMARY = "weather_code";
 
 
 

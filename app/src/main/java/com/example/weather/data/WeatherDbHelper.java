@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class WeatherDbHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "flurry-database2.db";
+    private static final String DATABASE_NAME = "flurry-database3.db";
     /**
      * Database version - have to implement if we change the schema.
      */
@@ -24,7 +24,16 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
                 + WeatherContract.WeatherEntry.COLUMN_DATE + " TEXT, "
                 + WeatherContract.WeatherEntry.COLUMN_MIN_TEMP + " REAL NOT NULL, "
                 + WeatherContract.WeatherEntry.COLUMN_MAX_TEMP + " REAL NOT NULL, "
-                + WeatherContract.WeatherEntry.COLUMN_PRECIPITATION_PROBABILITY + " REAL NOT NULL, "
+                + WeatherContract.WeatherEntry.COLUMN_HUMIDITY + " REAL, "
+                + WeatherContract.WeatherEntry.COLUMN_WIND_SPEED + " REAL, "
+                + WeatherContract.WeatherEntry.COLUMN_WIND_DIRECTION + " REAL, "
+                + WeatherContract.WeatherEntry.COLUMN_WIND_GUST + " REAL, "
+                + WeatherContract.WeatherEntry.COLUMN_PRECIPITATION + " REAL, "
+                + WeatherContract.WeatherEntry.COLUMN_PRECIPITATION_TYPE + " TEXT, "
+                + WeatherContract.WeatherEntry.COLUMN_PRECIPITATION_PROBABILITY + " REAL, "
+                + WeatherContract.WeatherEntry.COLUMN_SUNRISE + " TEXT, "
+                + WeatherContract.WeatherEntry.COLUMN_SUNSET + " TEXT, "
+                + WeatherContract.WeatherEntry.COLUMN_VISIBILITY + " REAL, "
                 + WeatherContract.WeatherEntry.COLUMN_SUMMARY + " TEXT );";
         sqLiteDatabase.execSQL(SQL_CREATE_WEATHER_TABLE);
     }

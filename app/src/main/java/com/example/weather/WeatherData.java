@@ -7,26 +7,25 @@ public class WeatherData implements Serializable {
     double lat, lon;
     double location_id;
     String date;
-    double min_temp, max_temp;
+    double min_temp, max_temp, humidity;
     double wind_speed, wind_direction, wind_gust;
-    double precipitation, precipitation_type, precipitation_probability;
-    String visibility;
+    double precipitation, precipitation_probability;
+    String precipitation_type;
+    double visibility;
     String sunrise, sunset;
     String weather_code;
 
-    public WeatherData(double lat, double lon, double location_id, String date, double min_temp, double max_temp, double wind_speed, double wind_direction, double wind_gust, double precipitation, double precipitation_type, double precipitation_probability, String visibility, String sunrise, String sunset, String weather_code) {
-        this.lat = lat;
-        this.lon = lon;
-        this.location_id = location_id;
+    public WeatherData(String date, double min_temp, double max_temp, double humidity, double wind_speed, double wind_direction, double wind_gust, double precipitation, String precipitation_type, double precipitation_probability,  double visibility, String sunrise, String sunset, String weather_code) {
         this.date = date;
         this.min_temp = min_temp;
         this.max_temp = max_temp;
+        this.humidity = humidity;
         this.wind_speed = wind_speed;
         this.wind_direction = wind_direction;
         this.wind_gust = wind_gust;
         this.precipitation = precipitation;
-        this.precipitation_type = precipitation_type;
         this.precipitation_probability = precipitation_probability;
+        this.precipitation_type = precipitation_type;
         this.visibility = visibility;
         this.sunrise = sunrise;
         this.sunset = sunset;
@@ -81,7 +80,7 @@ public class WeatherData implements Serializable {
         return precipitation;
     }
 
-    public double getPrecipitation_type() {
+    public String getPrecipitation_type() {
         return precipitation_type;
     }
 
@@ -89,7 +88,7 @@ public class WeatherData implements Serializable {
         return precipitation_probability;
     }
 
-    public String getVisibility() {
+    public double getVisibility() {
         return visibility;
     }
 
@@ -103,6 +102,10 @@ public class WeatherData implements Serializable {
 
     public String getWeather_code() {
         return weather_code;
+    }
+
+    public double getHumidity() {
+        return humidity;
     }
 }
 

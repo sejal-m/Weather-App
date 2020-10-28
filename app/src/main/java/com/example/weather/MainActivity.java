@@ -12,9 +12,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -36,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     SwipeRefreshLayout refreshLayout;
     TextView date_view, temp, min, max, desc;
     TextView prec_probability;
+    TableLayout detailed_forecast;
     LinearLayout base_container;
     private BottomSheetBehavior mBottomSheetBehavior;
     private int updated = 0;
@@ -53,37 +56,34 @@ public class MainActivity extends AppCompatActivity {
         refreshLayout = findViewById(R.id.pullToRefresh);
         base_container = findViewById(R.id.base_container);
         prec_probability = findViewById(R.id.prec_probability);
+        detailed_forecast = findViewById(R.id.detailed_forecast);
         myDialog = new Dialog(this);
         View bottomSheet = findViewById(R.id.bottom_sheet);
         mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
         mBottomSheetBehavior.setHideable(false);
 
-        /* mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+        mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 switch (newState) {
                     case BottomSheetBehavior.STATE_COLLAPSED:
-                        sample.setText("Collapsed");
+                        prec_probability.setVisibility(View.VISIBLE);
+                        detailed_forecast.setVisibility(View.GONE);
                         break;
-                    case BottomSheetBehavior.STATE_DRAGGING:
-                        sample.setText("Dragging...");
-                        break;
-                    case BottomSheetBehavior.STATE_EXPANDED:
-                        sample.setText("Expanded");
-                        break;
-                    case BottomSheetBehavior.STATE_HIDDEN:
-                        sample.setText("Hidden");
+                    case BottomSheetBehavior.STATE_DRAGGING: case BottomSheetBehavior.STATE_EXPANDED:
+                        prec_probability.setVisibility(View.GONE);
+                        detailed_forecast.setVisibility(View.VISIBLE);
                         break;
                     case BottomSheetBehavior.STATE_SETTLING:
-                        sample.setText("Settling...");
+
                         break;
                 }
             }
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                sample.setText("Sliding...");
+                //sample.setText("Sliding...");
             }
-        }); */
+        });
 
         updateBackground();
 
@@ -205,7 +205,16 @@ public class MainActivity extends AppCompatActivity {
         values.put(WeatherContract.WeatherEntry.COLUMN_DATE, weather.getDate());
         values.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, weather.getMax_temp());
         values.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, weather.getMin_temp());
+        values.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, weather.getHumidity());
+        values.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, weather.getWind_speed());
+        values.put(WeatherContract.WeatherEntry.COLUMN_WIND_DIRECTION, weather.getWind_direction());
+        values.put(WeatherContract.WeatherEntry.COLUMN_WIND_GUST, weather.getWind_gust());
+        values.put(WeatherContract.WeatherEntry.COLUMN_PRECIPITATION, weather.getPrecipitation());
+        values.put(WeatherContract.WeatherEntry.COLUMN_PRECIPITATION_TYPE, weather.getPrecipitation_type());
         values.put(WeatherContract.WeatherEntry.COLUMN_PRECIPITATION_PROBABILITY, weather.getPrecipitation_probability());
+        values.put(WeatherContract.WeatherEntry.COLUMN_SUNRISE, weather.getSunrise());
+        values.put(WeatherContract.WeatherEntry.COLUMN_SUNSET, weather.getSunset());
+        values.put(WeatherContract.WeatherEntry.COLUMN_VISIBILITY, weather.getVisibility());
         values.put(WeatherContract.WeatherEntry.COLUMN_SUMMARY, weather.getWeather_code());
         // Insert the new row, returning the primary key value of the new row
         db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, values);
