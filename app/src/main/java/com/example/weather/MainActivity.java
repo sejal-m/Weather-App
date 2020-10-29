@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -67,15 +68,17 @@ public class MainActivity extends AppCompatActivity {
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 switch (newState) {
                     case BottomSheetBehavior.STATE_COLLAPSED:
-                        prec_probability.setVisibility(View.VISIBLE);
-                        detailed_forecast.setVisibility(View.GONE);
+                    case BottomSheetBehavior.STATE_SETTLING:
+                        //prec_probability.setVisibility(View.VISIBLE);
+                        //detailed_forecast.setVisibility(View.INVISIBLE);
+                        prec_probability.setText("50% chance of precipitation today.");
+                        prec_probability.setBackgroundColor(Color.parseColor("#4D1F9F"));
                         break;
                     case BottomSheetBehavior.STATE_DRAGGING: case BottomSheetBehavior.STATE_EXPANDED:
-                        prec_probability.setVisibility(View.GONE);
-                        detailed_forecast.setVisibility(View.VISIBLE);
-                        break;
-                    case BottomSheetBehavior.STATE_SETTLING:
-
+                        //prec_probability.setVisibility(View.INVISIBLE);
+                        //detailed_forecast.setVisibility(View.VISIBLE);
+                        prec_probability.setText("Weather Details");
+                        prec_probability.setBackgroundColor(Color.parseColor("#ffffff"));
                         break;
                 }
             }
@@ -91,9 +94,9 @@ public class MainActivity extends AppCompatActivity {
             Toast toast = Toast.makeText(MainActivity.this,
                     "ALready updated data for today",
                     Toast.LENGTH_LONG);
-            Log.v("MainActivity","Already updated data");
-            //displayDatabaseInfo();
-            new WeatherAsyncTask().execute(request_url);
+            Log.v("MainActivity","Displaying old data");
+            displayDatabaseInfo();
+            //new WeatherAsyncTask().execute(request_url);
         }
         else {
             if (isNetworkAvailable()) {
@@ -109,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
                         "No internet connection.",
                         Toast.LENGTH_SHORT);
                 toast.show();
+                ShowPopup();
             }
         }
 
@@ -116,21 +120,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 //getLastLocation();
-                if(updatedData(QueryUtils.getCurrentDate())) {
-                    Toast toast = Toast.makeText(MainActivity.this,
-                            "ALready updated data for today",
-                            Toast.LENGTH_LONG);
-                    //desc.setText("Already updated for today");
-                    Log.v("MainActivity","Already updated data");
-                    displayDatabaseInfo();
-                }
-                else {
                     if (isNetworkAvailable()) {
                         //EarthquakeAsyncTask task = new EarthquakeAsyncTask();
-                        //task.execute(REQUEST_URL);
-                        Log.v("MainActivity", "OLD URL: " + request_url);
-                        //updateURL(LAT, LON);
-                        Log.v("MainActivity", "NEW URL: " + request_url);
+                        Log.v("MainActivity", "data updated on refreshing");
                         new WeatherAsyncTask().execute(request_url);
                     } else {
                         Log.v("MainActivity", "No connection");
@@ -138,8 +130,8 @@ public class MainActivity extends AppCompatActivity {
                                 "No internet connection.",
                                 Toast.LENGTH_SHORT);
                         toast.show();
+                        ShowPopup();
                     }
-                }
                 refreshLayout.setRefreshing(false);
             }
         });
@@ -147,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void ShowPopup(View v) {
+    public void ShowPopup() {
         myDialog.setContentView(R.layout.popup_view);
         myDialog.show();
         myDialog.setCanceledOnTouchOutside(true);

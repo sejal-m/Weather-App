@@ -136,12 +136,6 @@
 
             </LinearLayout>
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="ShowPopup"
-                android:text="show popup" />
-
         </LinearLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
@@ -151,7 +145,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:behavior_hideable="true"
-        app:behavior_peekHeight="55dp"
+        app:behavior_peekHeight="54dp"
         app:layout_behavior="@string/bottom_sheet_behavior"
         android:background="#FFFFFF">
 
@@ -164,7 +158,7 @@
             <TextView
                 android:id="@+id/prec_probability"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="54dp"
                 android:background="#4D1F9F"
                 android:padding="16dp"
                 android:textColor="#DEDEDE"
@@ -182,17 +176,18 @@
                         android:id="@+id/id_cad_details_dialog_key"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
+                        android:padding="10dp"
                         android:textColor="#000"
-                        android:text="Humidity">
+                        android:text="Humidity"
+                        android:textAppearance="?android:attr/textAppearanceSmall">
                     </TextView>
                     <TextView
                         android:id="@+id/id_cad_details_dialog_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
+                        android:paddingLeft="30dp"
                         android:text="70%"
-                        android:textAppearance="?android:attr/textAppearanceMedium">
+                        android:textAppearance="?android:attr/textAppearanceSmall">
                     </TextView>
                 </TableRow>
                 <TableRow
@@ -202,16 +197,17 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
+                        android:padding="10dp"
                         android:textColor="#000"
-                        android:text="Chance of rain">
+                        android:text="Chance of rain"
+                        android:textAppearance="?android:attr/textAppearanceSmall">
                     </TextView>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
+                        android:paddingLeft="30dp"
                         android:text="30%"
-                        android:textAppearance="?android:attr/textAppearanceMedium">
+                        android:textAppearance="?android:attr/textAppearanceSmall">
                     </TextView>
                 </TableRow>
                 <TableRow
@@ -221,16 +217,17 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
+                        android:padding="10dp"
                         android:textColor="#000"
-                        android:text="Visibility">
+                        android:text="Visibility"
+                        android:textAppearance="?android:attr/textAppearanceSmall">
                     </TextView>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
+                        android:paddingLeft="30dp"
                         android:text="6 km"
-                        android:textAppearance="?android:attr/textAppearanceMedium">
+                        android:textAppearance="?android:attr/textAppearanceSmall">
                     </TextView>
                 </TableRow>
                 <TableRow
@@ -240,16 +237,17 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
+                        android:padding="10dp"
                         android:textColor="#000"
-                        android:text="UV Index">
+                        android:text="UV Index"
+                        android:textAppearance="?android:attr/textAppearanceSmall">
                     </TextView>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
+                        android:paddingLeft="30dp"
                         android:text="Low, 0"
-                        android:textAppearance="?android:attr/textAppearanceMedium">
+                        android:textAppearance="?android:attr/textAppearanceSmall">
                     </TextView>
                 </TableRow>
                 <TableRow
@@ -259,16 +257,17 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
+                        android:padding="10dp"
                         android:textColor="#000"
-                        android:text="Pressure">
+                        android:text="Pressure"
+                        android:textAppearance="?android:attr/textAppearanceSmall">
                     </TextView>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="5dp"
+                        android:paddingLeft="30dp"
                         android:text="1,011 mBar"
-                        android:textAppearance="?android:attr/textAppearanceMedium">
+                        android:textAppearance="?android:attr/textAppearanceSmall">
                     </TextView>
                 </TableRow>
             </TableLayout>
