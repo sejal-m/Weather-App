@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     Dialog myDialog;
     public static final String LOG_TAG = MainActivity.class.getName();
     //private static String request_url = "https://api.openweathermap.org/data/2.5/weather?appid=fe21f6f759504260a7aa9a4c3b6a2492&lat=13.0266981&lon=77.5465897";
-    private static String request_url = "http://3.0.50.164/weather/forecast.php";
+    private static String request_url = "http://54.251.141.35/weather/forecast.php";
     SwipeRefreshLayout refreshLayout;
     TextView date_view, temp, min, max, desc;
     TextView prec_probability;
@@ -69,16 +69,16 @@ public class MainActivity extends AppCompatActivity {
                 switch (newState) {
                     case BottomSheetBehavior.STATE_COLLAPSED:
                     case BottomSheetBehavior.STATE_SETTLING:
-                        //prec_probability.setVisibility(View.VISIBLE);
-                        //detailed_forecast.setVisibility(View.INVISIBLE);
-                        prec_probability.setText("50% chance of precipitation today.");
-                        prec_probability.setBackgroundColor(Color.parseColor("#4D1F9F"));
+                        prec_probability.setVisibility(View.VISIBLE);
+                        detailed_forecast.setVisibility(View.INVISIBLE);
+                        //prec_probability.setText("50% chance of precipitation today.");
+                        //prec_probability.setBackgroundColor(Color.parseColor("#4D1F9F"));
                         break;
                     case BottomSheetBehavior.STATE_DRAGGING: case BottomSheetBehavior.STATE_EXPANDED:
-                        //prec_probability.setVisibility(View.INVISIBLE);
-                        //detailed_forecast.setVisibility(View.VISIBLE);
-                        prec_probability.setText("Weather Details");
-                        prec_probability.setBackgroundColor(Color.parseColor("#ffffff"));
+                        prec_probability.setVisibility(View.GONE);
+                        detailed_forecast.setVisibility(View.VISIBLE);
+                        //prec_probability.setText("Weather Details");
+                        //prec_probability.setBackgroundColor(Color.parseColor("#ffffff"));
                         break;
                 }
             }
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
 
         updateBackground();
 
-        if(updated != 0 && updatedData(QueryUtils.getCurrentDate())) {
+        /* if(updated != 0 && updatedData(QueryUtils.getCurrentDate())) {
             Toast toast = Toast.makeText(MainActivity.this,
                     "ALready updated data for today",
                     Toast.LENGTH_LONG);
@@ -114,6 +114,18 @@ public class MainActivity extends AppCompatActivity {
                 toast.show();
                 ShowPopup();
             }
+        }*/
+        if (isNetworkAvailable()) {
+            //EarthquakeAsyncTask task = new EarthquakeAsyncTask();
+            Log.v("MainActivity", "data updated on refreshing");
+            new WeatherAsyncTask().execute(request_url);
+        } else {
+            Log.v("MainActivity", "No connection");
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    "No internet connection.",
+                    Toast.LENGTH_SHORT);
+            toast.show();
+            ShowPopup();
         }
 
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -256,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
 
             SimpleDateFormat date_to_string = new SimpleDateFormat("EEE, dd MMM, yyyy");
 
-            desc.setText(currentSummary);
+            //desc.setText(currentSummary);
             min.setText("min "+currentMin+"°");
             max.setText("max "+currentMax+"°");
             prec_probability.setText(currentPrecProbability+ "% chance of precipitation today");
