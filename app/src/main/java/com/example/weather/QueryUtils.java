@@ -15,6 +15,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 import static com.example.weather.MainActivity.LOG_TAG;
 
@@ -37,17 +40,22 @@ public final class QueryUtils {
 
         try {
             JSONObject baseJsonResponse = new JSONObject(weatherJSON);
-            JSONObject weather = baseJsonResponse.getJSONArray("weather").getJSONObject(0);
-            JSONObject main = baseJsonResponse.getJSONObject("main");
-            JSONObject coord = baseJsonResponse.getJSONObject("coord");
-            double lon = coord.getDouble("lon");
-            double lat = coord.getDouble("lat");
-            String description = weather.getString("description");
-            double tempMin = main.getDouble("temp_min");
-            double tempMax = main.getDouble("temp_max");
-
-            Log.v("MainActivity", "lon = "+lon+" ,lat = "+lat);
-            weatherObject = new WeatherData(lon, lat, kelvinToCelsius(tempMin), kelvinToCelsius(tempMax), description);
+            String date = baseJsonResponse.getString("date");
+            JSONObject data = baseJsonResponse.getJSONObject("data");
+            double temp_min = data.getDouble("temp_min");
+            double temp_max = data.getDouble("temp_max");
+            double humidity = data.getDouble("humidity");
+            double wind_speed = data.getDouble("wind_speed");
+            double wind_direction = data.getDouble("wind_direction");
+            double wind_gust = data.getDouble("wind_gust");
+            double prec = data.getDouble("precipitation");
+            String prec_type = data.getString("precipitation_type");
+            double prec_prob = data.getDouble("precipitation_probability");
+            String sunrise = data.getString("sunrise");
+            String sunset = data.getString("sunset");
+            double visibility = data.getDouble("visibility");
+            String weather_code = data.getString("weather_code");
+            weatherObject = new WeatherData(date,temp_min,temp_max, humidity, wind_speed, wind_direction, wind_gust, prec, prec_type, prec_prob, visibility, sunrise, sunset, weather_code);
         }
         catch (JSONException e) {
             Log.e("QueryUtils", "Problem parsing JSON ", e);
@@ -55,10 +63,23 @@ public final class QueryUtils {
         return weatherObject;
     }
 
+    public static String getCurrentDate() {
+        Date date = new Date();
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
+        return dateFormatter.format(date);
+    }
+
+    private static String epochToDay(long timestamp) {
+        Date d = new Date(timestamp * 1000L);
+        SimpleDateFormat formatted = new SimpleDateFormat("dd-MM-yyyy");
+        formatted.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+        return formatted.format(d);
+    }
+
     private static String kelvinToCelsius(double temp) {
         temp -= 273.15;
         DecimalFormat temperatureFormat = new DecimalFormat("0.00");
-        return temperatureFormat.format(temp)+" °C";
+        return temperatureFormat.format(temp)+"°";
     }
 
     public static WeatherData fetchWeatherData(String requestUrl) {
