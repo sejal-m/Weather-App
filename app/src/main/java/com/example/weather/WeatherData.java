@@ -14,6 +14,7 @@ public class WeatherData implements Serializable {
     double visibility;
     String sunrise, sunset;
     String weather_code;
+    String description;
 
     public WeatherData(String date, double min_temp, double max_temp, double humidity, double wind_speed, double wind_direction, double wind_gust, double precipitation, String precipitation_type, double precipitation_probability,  double visibility, String sunrise, String sunset, String weather_code) {
         this.date = date;
@@ -32,13 +33,14 @@ public class WeatherData implements Serializable {
         this.weather_code = weather_code;
     }
 
-    public WeatherData(String date, double min_temp, double max_temp, double precipitation_probability, String weather_code) {
-        this.date = date;
-        this.min_temp = min_temp;
-        this.max_temp = max_temp;
-        this.precipitation_probability = precipitation_probability;
-        this.weather_code = weather_code;
+    public WeatherData(double lon, double lat, double min, double max, String description) {
+        this.lon = lon;
+        this.lat = lat;
+        this.min_temp = min;
+        this.max_temp = max;
+        this.description = description;
     }
+
 
     public double getLat() {
         return lat;
@@ -107,5 +109,10 @@ public class WeatherData implements Serializable {
     public double getHumidity() {
         return humidity;
     }
+
+    public String getDescription() {
+        return description;
+    }
+
 }
 

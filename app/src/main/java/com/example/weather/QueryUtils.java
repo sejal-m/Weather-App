@@ -18,14 +18,9 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-
-import static com.example.weather.MainActivity.LOG_TAG;
+import static com.example.weather.SearchActivity.LOG_TAG;
 
 public final class QueryUtils {
-
-    private static final String SAMPLE_JSON_RESPONSE = "{\"coord\":{\"lon\":77.6,\"lat\":12.98},\"weather\":[{\"id\":802,\"main\":\"Clouds\",\"description\":\"scattered clouds\",\"icon\":\"03d\"}],\"base\":\"stations\",\"main\":"+
-            "{\"temp\":301.31,\"feels_like\":304.77,\"temp_min\":300.37,\"temp_max\":302.59,\"pressure\":1012,\"humidity\":65},\"visibility\":6000,\"wind\":{\"speed\":1,\"deg\":0},\"clouds\":"+
-            "{\"all\":40},\"dt\":1595398053,\"sys\":{\"type\":1,\"id\":9205,\"country\":\"IN\",\"sunrise\":1595377965,\"sunset\":1595423941},\"timezone\":19800,\"id\":1277333,\"name\":\"Bengaluru\",\"cod\":200}";
 
     private QueryUtils() {
     }
@@ -40,22 +35,17 @@ public final class QueryUtils {
 
         try {
             JSONObject baseJsonResponse = new JSONObject(weatherJSON);
-            String date = baseJsonResponse.getString("date");
-            JSONObject data = baseJsonResponse.getJSONObject("data");
-            double temp_min = data.getDouble("temp_min");
-            double temp_max = data.getDouble("temp_max");
-            double humidity = data.getDouble("humidity");
-            double wind_speed = data.getDouble("wind_speed");
-            double wind_direction = data.getDouble("wind_direction");
-            double wind_gust = data.getDouble("wind_gust");
-            double prec = data.getDouble("precipitation");
-            String prec_type = data.getString("precipitation_type");
-            double prec_prob = data.getDouble("precipitation_probability");
-            String sunrise = data.getString("sunrise");
-            String sunset = data.getString("sunset");
-            double visibility = data.getDouble("visibility");
-            String weather_code = data.getString("weather_code");
-            weatherObject = new WeatherData(date,temp_min,temp_max, humidity, wind_speed, wind_direction, wind_gust, prec, prec_type, prec_prob, visibility, sunrise, sunset, weather_code);
+            JSONObject weather = baseJsonResponse.getJSONArray("weather").getJSONObject(0);
+            JSONObject main = baseJsonResponse.getJSONObject("main");
+            JSONObject coord = baseJsonResponse.getJSONObject("coord");
+            long timestamp = baseJsonResponse.getLong("dt");
+            double lon = coord.getDouble("lon");
+            double lat = coord.getDouble("lat");
+            String description = weather.getString("description");
+            double tempMin = main.getDouble("temp_min");
+            double tempMax = main.getDouble("temp_max");
+            Log.v("MainActivity", "lon = "+lon+" ,lat = "+lat);
+            weatherObject = new WeatherData(lon, lat, kelvinToCelsius(tempMin), kelvinToCelsius(tempMax), description);
         }
         catch (JSONException e) {
             Log.e("QueryUtils", "Problem parsing JSON ", e);
@@ -76,10 +66,11 @@ public final class QueryUtils {
         return formatted.format(d);
     }
 
-    private static String kelvinToCelsius(double temp) {
+    private static double kelvinToCelsius(double temp) {
         temp -= 273.15;
-        DecimalFormat temperatureFormat = new DecimalFormat("0.00");
-        return temperatureFormat.format(temp)+"°";
+        return temp;
+        //DecimalFormat temperatureFormat = new DecimalFormat("0.00");
+        //return temperatureFormat.format(temp)+"°";
     }
 
     public static WeatherData fetchWeatherData(String requestUrl) {
