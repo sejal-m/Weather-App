@@ -4,54 +4,44 @@ import java.io.Serializable;
 
 public class WeatherData implements Serializable {
 
-    double lat, lon;
-    double location_id;
+    String city;
     String date;
-    double min_temp, max_temp, humidity;
-    double wind_speed, wind_direction, wind_gust;
-    double precipitation, precipitation_probability;
-    String precipitation_type;
-    double visibility;
+    double min_temp, max_temp, temp;
+    double wind_speed;
+    double humidity;
+    double pressure;
     String sunrise, sunset;
-    String weather_code;
+    double visibility;
+    int weather_code;
     String description;
 
-    public WeatherData(String date, double min_temp, double max_temp, double humidity, double wind_speed, double wind_direction, double wind_gust, double precipitation, String precipitation_type, double precipitation_probability,  double visibility, String sunrise, String sunset, String weather_code) {
+    public WeatherData(String date, double min_temp, double max_temp, double temp, double wind_speed, double humidity, double pressure, String sunrise, String sunset, double visibility, int weather_code, String description) {
+        this.city = city;
         this.date = date;
         this.min_temp = min_temp;
         this.max_temp = max_temp;
-        this.humidity = humidity;
+        this.temp = temp;
         this.wind_speed = wind_speed;
-        this.wind_direction = wind_direction;
-        this.wind_gust = wind_gust;
-        this.precipitation = precipitation;
-        this.precipitation_probability = precipitation_probability;
-        this.precipitation_type = precipitation_type;
-        this.visibility = visibility;
+        this.humidity = humidity;
+        this.pressure = pressure;
         this.sunrise = sunrise;
         this.sunset = sunset;
+        this.visibility = visibility;
         this.weather_code = weather_code;
-    }
-
-    public WeatherData(double lon, double lat, double min, double max, String description) {
-        this.lon = lon;
-        this.lat = lat;
-        this.min_temp = min;
-        this.max_temp = max;
         this.description = description;
     }
 
-
-    public double getLat() {
-        return lat;
+    public WeatherData(String date, double min_temp, double max_temp, double temp, double humidity, String description) {
+        this.date = date;
+        this.min_temp = min_temp;
+        this.max_temp = max_temp;
+        this.temp = temp;
+        this.humidity = humidity;
+        this.description = description;
     }
 
-    public double getLon() {
-        return lon;
-    }
-
-    public double getLocation_id() {
-        return location_id;
+    public String getCity() {
+        return city;
     }
 
     public String getDate() {
@@ -66,32 +56,20 @@ public class WeatherData implements Serializable {
         return max_temp;
     }
 
+    public double getTemp() {
+        return temp;
+    }
+
     public double getWind_speed() {
         return wind_speed;
     }
 
-    public double getWind_direction() {
-        return wind_direction;
+    public double getHumidity() {
+        return humidity;
     }
 
-    public double getWind_gust() {
-        return wind_gust;
-    }
-
-    public double getPrecipitation() {
-        return precipitation;
-    }
-
-    public String getPrecipitation_type() {
-        return precipitation_type;
-    }
-
-    public double getPrecipitation_probability() {
-        return precipitation_probability;
-    }
-
-    public double getVisibility() {
-        return visibility;
+    public double getPressure() {
+        return pressure;
     }
 
     public String getSunrise() {
@@ -102,17 +80,16 @@ public class WeatherData implements Serializable {
         return sunset;
     }
 
-    public String getWeather_code() {
-        return weather_code;
+    public double getVisibility() {
+        return visibility;
     }
 
-    public double getHumidity() {
-        return humidity;
+    public int getWeather_code() {
+        return weather_code;
     }
 
     public String getDescription() {
         return description;
     }
-
 }
 

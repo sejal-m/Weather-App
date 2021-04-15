@@ -37,15 +37,22 @@ public final class QueryUtils {
             JSONObject baseJsonResponse = new JSONObject(weatherJSON);
             JSONObject weather = baseJsonResponse.getJSONArray("weather").getJSONObject(0);
             JSONObject main = baseJsonResponse.getJSONObject("main");
-            JSONObject coord = baseJsonResponse.getJSONObject("coord");
-            long timestamp = baseJsonResponse.getLong("dt");
-            double lon = coord.getDouble("lon");
-            double lat = coord.getDouble("lat");
+            JSONObject wind = baseJsonResponse.getJSONObject("wind");
+            JSONObject sys = baseJsonResponse.getJSONObject("sys");
+            long date = baseJsonResponse.getLong("dt");
             String description = weather.getString("description");
+            int weather_code = weather.getInt("id");
+            double temp = main.getDouble("temp");
             double tempMin = main.getDouble("temp_min");
             double tempMax = main.getDouble("temp_max");
-            Log.v("MainActivity", "lon = "+lon+" ,lat = "+lat);
-            weatherObject = new WeatherData(lon, lat, kelvinToCelsius(tempMin), kelvinToCelsius(tempMax), description);
+            double humidity = main.getDouble("humidity");
+            double pressure = main.getDouble("pressure");
+            double visibility = baseJsonResponse.getDouble("visibility");
+            double wind_speed = wind.getDouble("speed");
+            long sunrise = sys.getLong("sunrise");
+            long sunset = sys.getLong("sunset");
+
+            weatherObject = new WeatherData(epochToDay(date), kelvinToCelsius(tempMin), kelvinToCelsius(tempMax), kelvinToCelsius(temp), wind_speed, humidity, pressure, epochToTime(sunrise), epochToTime(sunset), visibility, weather_code, description);
         }
         catch (JSONException e) {
             Log.e("QueryUtils", "Problem parsing JSON ", e);
@@ -61,7 +68,14 @@ public final class QueryUtils {
 
     private static String epochToDay(long timestamp) {
         Date d = new Date(timestamp * 1000L);
-        SimpleDateFormat formatted = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat formatted = new SimpleDateFormat("EEE, MMM dd, yyyy");
+        formatted.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+        return formatted.format(d);
+    }
+
+    private static String epochToTime(long timestamp) {
+        Date d = new Date(timestamp * 1000L);
+        SimpleDateFormat formatted = new SimpleDateFormat("hh:mm aaa");
         formatted.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
         return formatted.format(d);
     }
