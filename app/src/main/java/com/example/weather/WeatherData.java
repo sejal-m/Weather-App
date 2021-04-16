@@ -12,8 +12,8 @@ public class WeatherData implements Serializable {
     double pressure;
     String sunrise, sunset;
     double visibility;
-    int weather_code;
     String description;
+    int weather_code;
 
     public WeatherData(String date, double min_temp, double max_temp, double temp, double wind_speed, double humidity, double pressure, String sunrise, String sunset, double visibility, int weather_code, String description) {
         this.city = city;

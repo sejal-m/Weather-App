@@ -13,6 +13,7 @@ package com.example.weather;
         import android.os.Bundle;
         import android.util.Log;
         import android.view.View;
+        import android.widget.Button;
         import android.widget.LinearLayout;
         import android.widget.RelativeLayout;
         import android.widget.TableLayout;
@@ -21,6 +22,9 @@ package com.example.weather;
 
         import androidx.annotation.NonNull;
         import androidx.appcompat.app.AppCompatActivity;
+        import androidx.constraintlayout.widget.ConstraintLayout;
+        import androidx.fragment.app.FragmentManager;
+        import androidx.fragment.app.FragmentTransaction;
         import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
         import com.example.weather.data.WeatherContract;
@@ -40,12 +44,13 @@ public class SearchActivity extends AppCompatActivity {
     private static String request_url;
     SwipeRefreshLayout refreshLayout;
     TextView date_time, temp, min, max, desc, city;
-    TextView prec_probability;
-    TableLayout detailed_forecast;
+    TextView prec_probability, humidity, sunrise, sunset;
+    LinearLayout detailed_forecast;
     RelativeLayout base_container;
     private BottomSheetBehavior mBottomSheetBehavior;
     private int updated = 0;
     String city_name;
+    Button concise, detailed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +69,46 @@ public class SearchActivity extends AppCompatActivity {
         temp = findViewById(R.id.temp);
         city = findViewById(R.id.city_name);
         refreshLayout = findViewById(R.id.pullToRefresh);
+        prec_probability = findViewById(R.id.prec_probability);
+        detailed_forecast = findViewById(R.id.detailed_forecast);
+        humidity = findViewById(R.id.humidity);
+        sunrise = findViewById(R.id.sunrise);
+        sunset = findViewById(R.id.sunset);
+        myDialog = new Dialog(this);
+
+        View bottomSheet = findViewById(R.id.bottom_sheet);
+        mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        mBottomSheetBehavior.setHideable(false);
+
+
+
+        mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                switch (newState) {
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                    case BottomSheetBehavior.STATE_SETTLING:
+                        prec_probability.setVisibility(View.VISIBLE);
+                        detailed_forecast.setVisibility(View.INVISIBLE);
+                        //prec_probability.setText("50% chance of precipitation today.");
+                        //prec_probability.setBackgroundColor(Color.parseColor("#4D1F9F"));
+                        break;
+                    case BottomSheetBehavior.STATE_DRAGGING: case BottomSheetBehavior.STATE_EXPANDED:
+                        prec_probability.setVisibility(View.GONE);
+                        detailed_forecast.setVisibility(View.VISIBLE);
+                        //prec_probability.setText("Weather Details");
+                        //prec_probability.setBackgroundColor(Color.parseColor("#ffffff"));
+                        break;
+                }
+            }
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                //sample.setText("Sliding...");
+            }
+        });
 
         updateBackground();
+
 
         if (isNetworkAvailable()) {
             new WeatherAsyncTask().execute(request_url);
@@ -82,10 +125,8 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 if (isNetworkAvailable()) {
-                    Log.v("MainActivity", "data updated on refreshing");
                     new WeatherAsyncTask().execute(request_url);
                 } else {
-                    Log.v("MainActivity", "No connection");
                     Toast toast = Toast.makeText(getApplicationContext(),
                             "No internet connection.",
                             Toast.LENGTH_SHORT);
@@ -148,80 +189,13 @@ public class SearchActivity extends AppCompatActivity {
 
     public void insertData(WeatherData weather) {
 
-        WeatherDbHelper mDbHelper = new WeatherDbHelper(this);
+        WeatherDbHelper databaseHelper = new WeatherDbHelper(this);
+        boolean b = databaseHelper.addRecord( weather );
+        Log.v(LOG_TAG, "Table insertion: "+b);
 
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
-        // Create a new map of values, where column names are the keys
-        ContentValues values = new ContentValues();
-        values.put(WeatherContract.WeatherEntry.COLUMN_DATE, weather.getDate());
-        values.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, weather.getMax_temp());
-        values.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, weather.getMin_temp());
-        values.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, weather.getHumidity());
-        values.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, weather.getWind_speed());
-        //values.put(WeatherContract.WeatherEntry.COLUMN_PRECIPITATION, weather.getPrecipitation());
-        values.put(WeatherContract.WeatherEntry.COLUMN_SUNRISE, weather.getSunrise());
-        values.put(WeatherContract.WeatherEntry.COLUMN_SUNSET, weather.getSunset());
-        values.put(WeatherContract.WeatherEntry.COLUMN_VISIBILITY, weather.getVisibility());
-        values.put(WeatherContract.WeatherEntry.COLUMN_SUMMARY, weather.getWeather_code());
-        // Insert the new row, returning the primary key value of the new row
-        db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, values);
+        databaseHelper.fetchLastEntry();
     }
 
-    private void displayDatabaseInfo() {
-        WeatherDbHelper mDbHelper = new WeatherDbHelper(this);
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        String[] projection = {
-                WeatherContract.WeatherEntry._ID,
-                WeatherContract.WeatherEntry.COLUMN_DATE,
-                WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
-                WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
-                WeatherContract.WeatherEntry.COLUMN_PRECIPITATION_PROBABILITY,
-                WeatherContract.WeatherEntry.COLUMN_SUMMARY};
-        Cursor cursor = db.query(
-                WeatherContract.WeatherEntry.TABLE_NAME,   // The table to query
-                projection,            // The columns to return
-                null,                  // The columns for the WHERE clause
-                null,                  // The values for the WHERE clause
-                null,                  // Don't group the rows
-                null,                  // Don't filter by row groups
-                null);                   // The sort order
-
-        try {
-            cursor.moveToPosition(cursor.getCount() - 1);
-            int dateColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATE);
-            int maxColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP);
-            int minColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP);
-            int prec_probabilityColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_PRECIPITATION_PROBABILITY);
-            int summaryColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_SUMMARY);
-
-            String currentDate = cursor.getString(dateColumnIndex);
-            double currentMax = cursor.getDouble(maxColumnIndex);
-            double currentMin = cursor.getDouble(minColumnIndex);
-            String currentPrecProbability = cursor.getString(prec_probabilityColumnIndex);
-            String currentSummary = cursor.getString(summaryColumnIndex);
-
-            SimpleDateFormat string_to_date = new SimpleDateFormat("yyyy-MM-dd");
-            Date date = null;
-            try {
-                date = string_to_date.parse(currentDate);
-            } catch (ParseException e) {
-                e.printStackTrace();
-                Log.v("MainActivity", "Date not parsed successfully");
-            }
-
-            SimpleDateFormat date_to_string = new SimpleDateFormat("EEE, dd MMM, yyyy");
-
-            min.setText("min "+currentMin+"°");
-            max.setText("max "+currentMax+"°");
-            prec_probability.setText(currentPrecProbability+ "% chance of precipitation today");
-            temp.setText(Integer.toString((int) (( currentMin + currentMax ) / 2)));
-            date_time.setText(date_to_string.format(date));
-
-        } finally {
-            cursor.close();
-        }
-    }
 
     private String capitalizeString(String s){
         String captilizedString="";
@@ -254,18 +228,19 @@ public class SearchActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(WeatherData weather) {
             if (weather != null) {
-                //insertData(weather);
+                insertData(weather);
                 //displayDatabaseInfo();
-                min.append(String.valueOf(result.getMin_temp()));
-                min.append("°C");
-                max.append(String.valueOf(result.getMax_temp()));
-                max.append("°C");
+                min.setText("Min "+String.valueOf(Math.round(result.getMin_temp()))+"°C");
+                max.setText("Max "+String.valueOf(Math.round(result.getMax_temp()))+"°C");
                 desc.setText(capitalizeString(result.getDescription()));
                 temp.setText(String.valueOf(Math.round(result.getTemp())));
                 date_time.setText(result.getDate());
                 city.setText(city_name);
                 Log.v(LOG_TAG, "Results: "+result.getSunrise()+" "+result.getSunset()+" "+result.getHumidity()+" "+result.getPressure()+" "+result.getVisibility()+" "+result.getWeather_code()+" "+
                 result.getWind_speed());
+                humidity.setText(String.valueOf(result.getHumidity()));
+                sunrise.setText(result.getSunrise());
+                sunset.setText(result.getSunset());
                 //desc.setText(city_name);
             }
         }

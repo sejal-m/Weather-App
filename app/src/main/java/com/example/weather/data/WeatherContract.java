@@ -10,7 +10,7 @@ public final class WeatherContract {
     public static final class WeatherEntry implements BaseColumns {
 
         /** Name of database table for weather */
-        public static final String TABLE_NAME = "forecast";
+        public static final String TABLE_NAME = "weather";
 
         public static final String _ID = BaseColumns._ID;
 
@@ -20,19 +20,13 @@ public final class WeatherContract {
 
         public static final String COLUMN_MAX_TEMP = "max";
 
+        public static final String COLUMN_TEMP = "temperature";
+
         public static final String COLUMN_HUMIDITY = "humidity";
 
         public static final String COLUMN_WIND_SPEED = "wind_speed";
 
-        public static final String COLUMN_WIND_DIRECTION = "wind_direction";
-
-        public static final String COLUMN_WIND_GUST = "wind_gust";
-
-        public static final String COLUMN_PRECIPITATION = "prec";
-
-        public static final String COLUMN_PRECIPITATION_TYPE = "prec_type";
-
-        public static final String COLUMN_PRECIPITATION_PROBABILITY = "prec_probability";
+        public static final String COLUMN_PRESSURE = "pressure";
 
         public static final String COLUMN_SUNRISE = "sunrise";
 
@@ -40,10 +34,9 @@ public final class WeatherContract {
 
         public static final String COLUMN_VISIBILITY = "visibility";
 
-        public static final String COLUMN_SUMMARY = "weather_code";
+        public static final String COLUMN_DESCRIPTION = "description";
 
-
+        public static final String COLUMN_WEATHER_CODE = "weather_code";
 
     }
-
 }
