@@ -69,8 +69,8 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
         return insert != -1;
     }
 
-    public void fetchLastEntry(){
-        List<String> returnList = new ArrayList<>( );
+    public WeatherData fetchLastEntry(){
+        WeatherData weather = null;
         //String queryString = "SELECT * FROM "+WeatherContract.WeatherEntry.TABLE_NAME;
         String queryString = "SELECT * FROM "+WeatherContract.WeatherEntry.TABLE_NAME
                 + " WHERE rowid = ( SELECT MAX(rowid) FROM " + WeatherContract.WeatherEntry.TABLE_NAME + " )";
@@ -81,34 +81,47 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
         if (c != null) {
             if (c.moveToFirst()) { // if Cursor is not empty
                 int tempColumnIndex = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_TEMP);
+                int minColumnIndex = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP);
+                int maxColumnIndex = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP);
+                int descColumnIndex = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DESCRIPTION);
+                int dateColumnIndex = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATE);
                 int humidityColumnIndex = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_HUMIDITY);
                 int pressureColumnIndex = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_PRESSURE);
                 int sunriseColumnIndex = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_SUNRISE);
                 int sunsetColumnIndex = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_SUNSET);
                 int visibilityColumnIndex = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_VISIBILITY);
                 int speedColumnIndex = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED);
+                int codeColumnIndex = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_WEATHER_CODE);
 
                 String fetchedTemp = String.format("%.5g%n", c.getDouble(tempColumnIndex));
-                //String fetchedTemp = String.valueOf(c.getDouble(tempColumnIndex));
+                String fetchedMin = String.format("%.5g%n", c.getDouble(minColumnIndex));
+                String fetchedMax = String.format("%.5g%n", c.getDouble(maxColumnIndex));
+                String fetchedDesc = c.getString(descColumnIndex);
+                String fetchedDate = c.getString(dateColumnIndex);
                 String fetchedHumidity = String.valueOf(c.getDouble(humidityColumnIndex));
                 String fetchedPressure = String.valueOf(c.getDouble(pressureColumnIndex));
                 String fetchedVisibility = String.valueOf(c.getDouble(visibilityColumnIndex));
                 String fetchedSpeed = String.valueOf(c.getDouble(speedColumnIndex));
                 String fetchedSunrise = c.getString(sunriseColumnIndex);
                 String fetchedSunset = c.getString(sunsetColumnIndex);
+                int fetchedCode = c.getInt(codeColumnIndex);
                 Log.v("WeatherDbHelper",fetchedTemp);
+
+                weather = new WeatherData(fetchedDate, Double.parseDouble(fetchedMin), Double.parseDouble(fetchedMax), Double.parseDouble(fetchedTemp),Double.parseDouble(fetchedSpeed), Double.parseDouble(fetchedHumidity), Double.parseDouble(fetchedPressure), fetchedSunrise, fetchedSunset, Double.parseDouble(fetchedVisibility), fetchedCode, fetchedDesc);
             }
             else {
                 // Cursor is empty
+                Log.v("WeatherDbHelper","cursor empty");
             }
         }
         else {
             // Cursor is null
+            Log.v("WeatherDbHelper","cursor null");
         }
 
         c.close();
         db.close();
-        //return returnList;*/
+        return weather;
     }
 
 }

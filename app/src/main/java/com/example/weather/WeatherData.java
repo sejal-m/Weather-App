@@ -40,6 +40,15 @@ public class WeatherData implements Serializable {
         this.description = description;
     }
 
+    public WeatherData(double wind_speed, double humidity, double pressure, String sunrise, String sunset, double visibility) {
+        this.wind_speed = wind_speed;
+        this.humidity = humidity;
+        this.pressure = pressure;
+        this.sunrise = sunrise;
+        this.sunset = sunset;
+        this.visibility = visibility;
+    }
+
     public String getCity() {
         return city;
     }

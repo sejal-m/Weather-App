@@ -1,12 +1,11 @@
 package com.example.weather;
 
         import android.app.Dialog;
-        import android.content.ContentValues;
+        import android.app.SearchManager;
         import android.content.Context;
         import android.content.Intent;
         import android.database.Cursor;
         import android.database.sqlite.SQLiteDatabase;
-        import android.graphics.Color;
         import android.net.ConnectivityManager;
         import android.net.NetworkInfo;
         import android.os.AsyncTask;
@@ -14,27 +13,21 @@ package com.example.weather;
         import android.util.Log;
         import android.view.View;
         import android.widget.Button;
+        import android.widget.ImageView;
         import android.widget.LinearLayout;
         import android.widget.RelativeLayout;
-        import android.widget.TableLayout;
         import android.widget.TextView;
         import android.widget.Toast;
 
         import androidx.annotation.NonNull;
         import androidx.appcompat.app.AppCompatActivity;
-        import androidx.constraintlayout.widget.ConstraintLayout;
-        import androidx.fragment.app.FragmentManager;
-        import androidx.fragment.app.FragmentTransaction;
         import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
         import com.example.weather.data.WeatherContract;
         import com.example.weather.data.WeatherDbHelper;
         import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
-        import java.text.ParseException;
-        import java.text.SimpleDateFormat;
         import java.util.Calendar;
-        import java.util.Date;
 
 public class SearchActivity extends AppCompatActivity {
 
@@ -44,19 +37,18 @@ public class SearchActivity extends AppCompatActivity {
     private static String request_url;
     SwipeRefreshLayout refreshLayout;
     TextView date_time, temp, min, max, desc, city;
-    TextView prec_probability, humidity, sunrise, sunset;
+    TextView details, humidity, sunrise, sunset, visibility, pressure, speed;
     LinearLayout detailed_forecast;
-    RelativeLayout base_container;
+    RelativeLayout base_container, wrong;
     private BottomSheetBehavior mBottomSheetBehavior;
-    private int updated = 0;
+    ImageView weather_image;
     String city_name;
-    Button concise, detailed;
+    Button search;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
-
         Intent i = getIntent();
         city_name = i.getStringExtra("city_name");
         request_url = initial_url+city_name;
@@ -69,18 +61,31 @@ public class SearchActivity extends AppCompatActivity {
         temp = findViewById(R.id.temp);
         city = findViewById(R.id.city_name);
         refreshLayout = findViewById(R.id.pullToRefresh);
-        prec_probability = findViewById(R.id.prec_probability);
-        detailed_forecast = findViewById(R.id.detailed_forecast);
+        details = findViewById(R.id.details);
+        detailed_forecast = findViewById(R.id.detailsContainer);
         humidity = findViewById(R.id.humidity);
         sunrise = findViewById(R.id.sunrise);
         sunset = findViewById(R.id.sunset);
+        visibility = findViewById(R.id.visibility);
+        pressure = findViewById(R.id.pressure);
+        speed = findViewById(R.id.wind);
+        weather_image = findViewById(R.id.weather_image);
+        wrong = findViewById(R.id.wrong);
+        search = findViewById(R.id.search_button);
         myDialog = new Dialog(this);
 
         View bottomSheet = findViewById(R.id.bottom_sheet);
         mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
         mBottomSheetBehavior.setHideable(false);
 
-
+        search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+                intent.putExtra(SearchManager.QUERY, city_name+" detailed forecast");
+                startActivity(intent);
+            }
+        });
 
         mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
@@ -88,13 +93,13 @@ public class SearchActivity extends AppCompatActivity {
                 switch (newState) {
                     case BottomSheetBehavior.STATE_COLLAPSED:
                     case BottomSheetBehavior.STATE_SETTLING:
-                        prec_probability.setVisibility(View.VISIBLE);
+                        details.setVisibility(View.VISIBLE);
                         detailed_forecast.setVisibility(View.INVISIBLE);
                         //prec_probability.setText("50% chance of precipitation today.");
                         //prec_probability.setBackgroundColor(Color.parseColor("#4D1F9F"));
                         break;
                     case BottomSheetBehavior.STATE_DRAGGING: case BottomSheetBehavior.STATE_EXPANDED:
-                        prec_probability.setVisibility(View.GONE);
+                        details.setVisibility(View.GONE);
                         detailed_forecast.setVisibility(View.VISIBLE);
                         //prec_probability.setText("Weather Details");
                         //prec_probability.setBackgroundColor(Color.parseColor("#ffffff"));
@@ -112,13 +117,11 @@ public class SearchActivity extends AppCompatActivity {
 
         if (isNetworkAvailable()) {
             new WeatherAsyncTask().execute(request_url);
+
         } else {
             Log.v("MainActivity", "No connection");
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    "No internet connection.",
-                    Toast.LENGTH_SHORT);
-            toast.show();
             ShowPopup();
+            displayDatabaseInfo();
         }
 
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -127,10 +130,6 @@ public class SearchActivity extends AppCompatActivity {
                 if (isNetworkAvailable()) {
                     new WeatherAsyncTask().execute(request_url);
                 } else {
-                    Toast toast = Toast.makeText(getApplicationContext(),
-                            "No internet connection.",
-                            Toast.LENGTH_SHORT);
-                    toast.show();
                     ShowPopup();
                 }
                 refreshLayout.setRefreshing(false);
@@ -150,41 +149,10 @@ public class SearchActivity extends AppCompatActivity {
         Calendar c = Calendar.getInstance();
         int timeOfDay = c.get(Calendar.HOUR_OF_DAY);
 
-        if(timeOfDay >= 0 && timeOfDay < 12){
+        if(timeOfDay >= 8 && timeOfDay < 22){
             base_container.setBackgroundResource(R.drawable.day_wallpaper);
-        }else if(timeOfDay >= 12 && timeOfDay < 24){
-            base_container.setBackgroundResource(R.drawable.evening_wallpaper);
-        }
-    }
-
-    private boolean updatedData(String currentDate) {
-        updated = 1;
-        String fetchedDate = "";
-
-        WeatherDbHelper mDbHelper = new WeatherDbHelper(this);
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
-        String[] projection = {WeatherContract.WeatherEntry.COLUMN_DATE};
-
-        Cursor cursor = null;
-        try {
-            cursor = db.query(
-                    WeatherContract.WeatherEntry.TABLE_NAME,   // The table to query
-                    projection,            // The columns to return
-                    null,                  // The columns for the WHERE clause
-                    null,                  // The values for the WHERE clause
-                    null,                  // Don't group the rows
-                    null,                  // Don't filter by row groups
-                    null);
-            cursor.moveToPosition(cursor.getCount() - 1);
-            int dateColumnIndex = cursor.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATE);
-            //while (cursor.moveToNext())
-            fetchedDate = cursor.getString(dateColumnIndex);
-        } finally {
-            cursor.close();
-        }
-        Log.v("MainActivity", currentDate.equals(fetchedDate) + "");
-        return currentDate.equals(fetchedDate);
+        }else
+            base_container.setBackgroundResource(R.drawable.night_wallpaper);
     }
 
     public void insertData(WeatherData weather) {
@@ -192,10 +160,45 @@ public class SearchActivity extends AppCompatActivity {
         WeatherDbHelper databaseHelper = new WeatherDbHelper(this);
         boolean b = databaseHelper.addRecord( weather );
         Log.v(LOG_TAG, "Table insertion: "+b);
-
         databaseHelper.fetchLastEntry();
     }
 
+    public void displayDatabaseInfo() {
+        WeatherDbHelper databaseHelper = new WeatherDbHelper(this);
+        WeatherData weather = databaseHelper.fetchLastEntry();
+        humidity.setText(String.valueOf(weather.getHumidity()));
+        visibility.setText(String.valueOf(weather.getVisibility()));
+        pressure.setText(String.valueOf(weather.getPressure()));
+        speed.setText(String.valueOf(weather.getWind_speed()));
+        sunrise.setText(weather.getSunrise());
+        sunset.setText(weather.getSunset());
+        min.setText("Min "+Math.round(weather.getMin_temp())+"°C");
+        max.setText("Max "+Math.round(weather.getMax_temp())+"°C");
+        desc.setText(capitalizeString(weather.getDescription()));
+        temp.setText(String.valueOf(Math.round(weather.getTemp())));
+        date_time.setText(weather.getDate());
+        city.setText(capitalizeString(city_name));
+        updateIcon(weather.getWeather_code());
+        //updated.setText("Last Updated at "+QueryUtils.updatedAt+".");
+    }
+
+    private void updateIcon(int weather_code) {
+        if(weather_code >= 200 && weather_code < 300)
+            weather_image.setImageResource(R.drawable.thunderstorm);
+        else if(weather_code >= 300 && weather_code < 500)
+            weather_image.setImageResource(R.drawable.rain);
+        else if(weather_code >= 500 && weather_code < 600)
+            weather_image.setImageResource(R.drawable.rain);
+        else if(weather_code >= 600 && weather_code < 700)
+            weather_image.setImageResource(R.drawable.frost);
+        else if(weather_code >= 700 && weather_code < 800)
+            weather_image.setImageResource(R.drawable.haze);
+        else if(weather_code == 800)
+            weather_image.setImageResource(R.drawable.sun);
+        else if(weather_code > 800)
+            weather_image.setImageResource(R.drawable.cloud_with_sun);
+
+    }
 
     private String capitalizeString(String s){
         String captilizedString="";
@@ -221,7 +224,7 @@ public class SearchActivity extends AppCompatActivity {
             }
 
             result = QueryUtils.fetchWeatherData(urls[0]);
-            Log.v("MainActivity", "Successful connection");
+            Log.v("MainActivity", "Successful connection"+result);
             return result;
         }
 
@@ -229,19 +232,17 @@ public class SearchActivity extends AppCompatActivity {
         protected void onPostExecute(WeatherData weather) {
             if (weather != null) {
                 insertData(weather);
-                //displayDatabaseInfo();
-                min.setText("Min "+String.valueOf(Math.round(result.getMin_temp()))+"°C");
-                max.setText("Max "+String.valueOf(Math.round(result.getMax_temp()))+"°C");
-                desc.setText(capitalizeString(result.getDescription()));
-                temp.setText(String.valueOf(Math.round(result.getTemp())));
-                date_time.setText(result.getDate());
-                city.setText(city_name);
+
                 Log.v(LOG_TAG, "Results: "+result.getSunrise()+" "+result.getSunset()+" "+result.getHumidity()+" "+result.getPressure()+" "+result.getVisibility()+" "+result.getWeather_code()+" "+
                 result.getWind_speed());
-                humidity.setText(String.valueOf(result.getHumidity()));
-                sunrise.setText(result.getSunrise());
-                sunset.setText(result.getSunset());
-                //desc.setText(city_name);
+                displayDatabaseInfo();
+
+            }
+            else {
+                wrong.setVisibility(View.VISIBLE);
+                base_container.setVisibility(View.GONE);
+                details.setVisibility(View.GONE);
+                detailed_forecast.setVisibility(View.GONE);
             }
         }
 

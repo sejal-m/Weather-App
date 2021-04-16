@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               Intent intent = new Intent( MainActivity.this, SearchActivity.class);
+               Intent intent = new Intent( MainActivity.this, SplashActivity.class);
                intent.putExtra("city_name",search_city.getText().toString());
                startActivity(intent);
             }

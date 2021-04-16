@@ -22,6 +22,8 @@ import static com.example.weather.SearchActivity.LOG_TAG;
 
 public final class QueryUtils {
 
+    public static String updatedAt;
+
     private QueryUtils() {
     }
 
@@ -51,7 +53,7 @@ public final class QueryUtils {
             double wind_speed = wind.getDouble("speed");
             long sunrise = sys.getLong("sunrise");
             long sunset = sys.getLong("sunset");
-
+            updatedAt = getUpdatedDate(date);
             weatherObject = new WeatherData(epochToDay(date), kelvinToCelsius(tempMin), kelvinToCelsius(tempMax), kelvinToCelsius(temp), wind_speed, humidity, pressure, epochToTime(sunrise), epochToTime(sunset), visibility, weather_code, description);
         }
         catch (JSONException e) {
@@ -60,23 +62,24 @@ public final class QueryUtils {
         return weatherObject;
     }
 
-    public static String getCurrentDate() {
-        Date date = new Date();
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
-        return dateFormatter.format(date);
-    }
-
     private static String epochToDay(long timestamp) {
         Date d = new Date(timestamp * 1000L);
         SimpleDateFormat formatted = new SimpleDateFormat("EEE, MMM dd, yyyy");
-        formatted.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+        formatted.setTimeZone(TimeZone.getTimeZone("IST"));
         return formatted.format(d);
     }
 
     private static String epochToTime(long timestamp) {
         Date d = new Date(timestamp * 1000L);
         SimpleDateFormat formatted = new SimpleDateFormat("hh:mm aaa");
-        formatted.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+        formatted.setTimeZone(TimeZone.getTimeZone("IST"));
+        return formatted.format(d);
+    }
+
+    private static String getUpdatedDate(long timestamp) {
+        Date d = new Date(timestamp * 1000L);
+        SimpleDateFormat formatted = new SimpleDateFormat("hh:mm aaa");
+        formatted.setTimeZone(TimeZone.getTimeZone("IST"));
         return formatted.format(d);
     }
 
