@@ -1,10 +1,10 @@
 package com.example.weather;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -22,20 +22,17 @@ public class SplashActivity extends AppCompatActivity {
             public void run() {
                 try {
                     super.run();
-                    sleep(2000);  //Delay of 3 seconds
+                    sleep(1000);  //Delay of 3 seconds
                 } catch (Exception e) {
-
+                    Log.v("SplashActivity", "Error: " + e);
                 } finally {
-
                     Intent i = new Intent(SplashActivity.this, SearchActivity.class);
-                    i.putExtra("city_name",city_name);
+                    i.putExtra("city_name", city_name);
                     startActivity(i);
                     finish();
                 }
             }
         };
         welcomeThread.start();
-
-
     }
 }

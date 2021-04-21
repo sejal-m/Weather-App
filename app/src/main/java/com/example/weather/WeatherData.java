@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class WeatherData implements Serializable {
 
-    String city;
+    public static String city;
     String date;
     double min_temp, max_temp, temp;
     double wind_speed;
@@ -16,7 +16,6 @@ public class WeatherData implements Serializable {
     int weather_code;
 
     public WeatherData(String date, double min_temp, double max_temp, double temp, double wind_speed, double humidity, double pressure, String sunrise, String sunset, double visibility, int weather_code, String description) {
-        this.city = city;
         this.date = date;
         this.min_temp = min_temp;
         this.max_temp = max_temp;
@@ -38,15 +37,6 @@ public class WeatherData implements Serializable {
         this.temp = temp;
         this.humidity = humidity;
         this.description = description;
-    }
-
-    public WeatherData(double wind_speed, double humidity, double pressure, String sunrise, String sunset, double visibility) {
-        this.wind_speed = wind_speed;
-        this.humidity = humidity;
-        this.pressure = pressure;
-        this.sunrise = sunrise;
-        this.sunset = sunset;
-        this.visibility = visibility;
     }
 
     public String getCity() {

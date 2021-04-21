@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
 
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -13,22 +12,20 @@
         android:layout_height="match_parent"
         tools:context=".SearchActivity">
 
-
         <RelativeLayout
+            android:id="@+id/base_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/base_container">
-
+            android:background="@drawable/gradient">
 
             <TextView
                 android:id="@+id/city_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:inputType="textCapSentences"
-                android:text="Bangalore"
-                android:textColor="#4FFFFFFF"
-                android:textSize="28sp" />
+                android:textColor="#202020"
+                android:textSize="28sp"
+                tools:text="Bangalore" />
 
             <TextView
                 android:id="@+id/date_time"
@@ -37,8 +34,8 @@
                 android:layout_below="@id/city_name"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="8dp"
-                android:textColor="#77FFFFFF"
-                android:text="Wed, 21 Mar, 2021" />
+                android:textColor="#202020"
+                tools:text="Wed, 21 Mar, 2021" />
 
             <TextView
                 android:id="@+id/desc"
@@ -47,10 +44,9 @@
                 android:layout_below="@+id/date_time"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="48dp"
-                android:inputType="textCapSentences"
-                android:text="Rain"
-                android:textColor="#77FFFFFF"
-                android:textSize="36sp" />
+                android:textColor="#202020"
+                android:textSize="36sp"
+                tools:text="Rain" />
 
             <TextView
                 android:id="@+id/temp"
@@ -63,9 +59,9 @@
                 android:layout_marginLeft="36dp"
                 android:layout_marginTop="181dp"
                 android:includeFontPadding="false"
-                android:text="27"
-                android:textColor="#77FFFFFF"
-                android:textSize="96sp" />
+                android:textColor="#202020"
+                android:textSize="96sp"
+                tools:text="27" />
 
             <TextView
                 android:id="@+id/temp_symbol"
@@ -77,9 +73,9 @@
                 android:layout_toRightOf="@+id/temp"
                 android:includeFontPadding="false"
                 android:paddingLeft="8dp"
-                android:text="°C"
-                android:textColor="#77FFFFFF"
-                android:textSize="48sp" />
+                android:textColor="#202020"
+                android:textSize="48sp"
+                tools:text="°C" />
 
 
             <ImageView
@@ -87,24 +83,24 @@
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:layout_alignTop="@id/temp"
-                android:layout_marginTop="3dp"
-                android:layout_toRightOf="@+id/temp_symbol"
-                android:tint="#BBCCDC"
-                android:layout_marginRight="40dp"
-                android:layout_marginLeft="40dp"
                 android:layout_alignParentRight="true"
+                android:layout_marginLeft="40dp"
+                android:layout_marginTop="3dp"
+                android:layout_marginRight="40dp"
+                android:layout_toRightOf="@+id/temp_symbol"
                 android:alpha="0.8"
-                app:srcCompat="@drawable/rain_icon" />
+                android:contentDescription="weather image"
+                android:tint="#737272" />
 
             <TextView
                 android:id="@+id/max_temp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/temp"
-                android:textColor="#77FFFFFF"
                 android:layout_marginLeft="36dp"
-                android:text="Max "
-                android:textSize="20sp" />
+                android:textColor="#202020"
+                android:textSize="20sp"
+                tools:text="Max " />
 
             <TextView
                 android:id="@+id/dot"
@@ -112,11 +108,13 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/temp"
                 android:layout_toRightOf="@id/max_temp"
-                android:textColor="#77FFFFFF"
+                android:gravity="bottom"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
-                android:text="●"
-                android:textSize="16sp" />
+                android:textAlignment="gravity"
+                android:textColor="#202020"
+                android:textSize="14sp"
+                tools:text="●" />
 
             <TextView
                 android:id="@+id/min_temp"
@@ -124,9 +122,10 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/temp"
                 android:layout_toRightOf="@id/dot"
-                android:textColor="#77FFFFFF"
-                android:text="Min "
-                android:textSize="20sp" />
+                android:textColor="#202020"
+                android:textSize="20sp"
+                tools:text="Min " />
+
             <Button
                 android:id="@+id/search_button"
                 android:layout_width="280dp"
@@ -135,12 +134,11 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="36dp"
                 android:alpha="0.9"
-                android:text="get full forecast details"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:textColor="#464647"
                 android:drawableRight="@drawable/ic_stat_name"
-                />
+                android:textAllCaps="false"
+                android:textColor="#464647"
+                android:textSize="16sp"
+                android:visibility="invisible" />
 
         </RelativeLayout>
 
@@ -150,16 +148,16 @@
         android:id="@+id/bottom_sheet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
         android:alpha="0.8"
+        android:background="#FFFFFF"
         app:behavior_hideable="true"
         app:behavior_peekHeight="54dp"
         app:layout_behavior="@string/bottom_sheet_behavior">
 
         <LinearLayout
+            android:id="@+id/bottom"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/bottom"
             android:orientation="vertical">
 
             <TextView
@@ -167,9 +165,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
                 android:background="#FFFFFF"
+                android:gravity="center"
                 android:padding="16dp"
                 android:text="See Details"
-                android:gravity="center"
                 android:textColor="#B0000000"
                 android:textSize="18sp" />
 
@@ -373,7 +371,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="06:40 AM"
-                            android:textSize="14dp" />
+                            android:textSize="14sp" />
                     </LinearLayout>
 
                     <Space
@@ -392,6 +390,7 @@
                         <ImageView
                             android:layout_width="25dp"
                             android:layout_height="25dp"
+                            android:contentDescription="TODO"
                             android:src="@drawable/visibility"
                             android:tint="#60FFFFFF" />
 
@@ -403,7 +402,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Wind Speed"
-                            android:textSize="12dp" />
+                            android:textSize="12sp" />
 
                         <TextView
                             android:id="@+id/visibility"
@@ -421,11 +420,12 @@
     </androidx.core.widget.NestedScrollView>
 
     <RelativeLayout
+        android:id="@+id/wrong"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/gradient"
-        android:id="@+id/wrong"
         android:visibility="gone">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

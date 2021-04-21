@@ -6,16 +6,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.weather.WeatherData;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class WeatherDbHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "flurryDB.db";
+    private static final String DATABASE_NAME = "flurryData.db";
 
     public WeatherDbHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -23,9 +19,10 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        //CREATE TABLE weather
-        String CREATE_WEATHER_TABLE = "CREATE TABLE "+ WeatherContract.WeatherEntry.TABLE_NAME + "("
+
+        String CREATE_WEATHER_TABLE = "CREATE TABLE " + WeatherContract.WeatherEntry.TABLE_NAME + "("
                 + WeatherContract.WeatherEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + WeatherContract.WeatherEntry.COLUMN_CITY + " TEXT, "
                 + WeatherContract.WeatherEntry.COLUMN_DATE + " TEXT, "
                 + WeatherContract.WeatherEntry.COLUMN_MIN_TEMP + " REAL NOT NULL, "
                 + WeatherContract.WeatherEntry.COLUMN_MAX_TEMP + " REAL NOT NULL, "
@@ -43,14 +40,15 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + WeatherContract.WeatherEntry.TABLE_NAME );
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + WeatherContract.WeatherEntry.TABLE_NAME);
     }
 
-    public boolean addRecord(WeatherData weather){
+    public boolean addRecord(WeatherData weather) {
         SQLiteDatabase db = this.getWritableDatabase();
-        //class for adding values to table
-        ContentValues values = new ContentValues( );
 
+        ContentValues values = new ContentValues();
+
+        values.put(WeatherContract.WeatherEntry.COLUMN_CITY, weather.getCity());
         values.put(WeatherContract.WeatherEntry.COLUMN_DATE, weather.getDate());
         values.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, weather.getMax_temp());
         values.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, weather.getMin_temp());
@@ -69,14 +67,14 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
         return insert != -1;
     }
 
-    public WeatherData fetchLastEntry(){
+    public WeatherData fetchLastEntry() {
         WeatherData weather = null;
-        //String queryString = "SELECT * FROM "+WeatherContract.WeatherEntry.TABLE_NAME;
-        String queryString = "SELECT * FROM "+WeatherContract.WeatherEntry.TABLE_NAME
+
+        String queryString = "SELECT * FROM " + WeatherContract.WeatherEntry.TABLE_NAME
                 + " WHERE rowid = ( SELECT MAX(rowid) FROM " + WeatherContract.WeatherEntry.TABLE_NAME + " )";
-        Log.v("WeatherDbHelper",queryString);
+        Log.v("WeatherDbHelper", queryString);
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor c = db.rawQuery( queryString,null );
+        Cursor c = db.rawQuery(queryString, null);
 
         if (c != null) {
             if (c.moveToFirst()) { // if Cursor is not empty
@@ -105,18 +103,14 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
                 String fetchedSunrise = c.getString(sunriseColumnIndex);
                 String fetchedSunset = c.getString(sunsetColumnIndex);
                 int fetchedCode = c.getInt(codeColumnIndex);
-                Log.v("WeatherDbHelper",fetchedTemp);
+                Log.v("WeatherDbHelper", fetchedTemp);
 
-                weather = new WeatherData(fetchedDate, Double.parseDouble(fetchedMin), Double.parseDouble(fetchedMax), Double.parseDouble(fetchedTemp),Double.parseDouble(fetchedSpeed), Double.parseDouble(fetchedHumidity), Double.parseDouble(fetchedPressure), fetchedSunrise, fetchedSunset, Double.parseDouble(fetchedVisibility), fetchedCode, fetchedDesc);
+                weather = new WeatherData(fetchedDate, Double.parseDouble(fetchedMin), Double.parseDouble(fetchedMax), Double.parseDouble(fetchedTemp), Double.parseDouble(fetchedSpeed), Double.parseDouble(fetchedHumidity), Double.parseDouble(fetchedPressure), fetchedSunrise, fetchedSunset, Double.parseDouble(fetchedVisibility), fetchedCode, fetchedDesc);
+            } else {
+                Log.v("WeatherDbHelper", "cursor empty");
             }
-            else {
-                // Cursor is empty
-                Log.v("WeatherDbHelper","cursor empty");
-            }
-        }
-        else {
-            // Cursor is null
-            Log.v("WeatherDbHelper","cursor null");
+        } else {
+            Log.v("WeatherDbHelper", "cursor null");
         }
 
         c.close();

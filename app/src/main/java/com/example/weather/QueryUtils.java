@@ -14,15 +14,14 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+
 import static com.example.weather.SearchActivity.LOG_TAG;
 
 public final class QueryUtils {
 
-    public static String updatedAt;
 
     private QueryUtils() {
     }
@@ -53,10 +52,8 @@ public final class QueryUtils {
             double wind_speed = wind.getDouble("speed");
             long sunrise = sys.getLong("sunrise");
             long sunset = sys.getLong("sunset");
-            updatedAt = getUpdatedDate(date);
             weatherObject = new WeatherData(epochToDay(date), kelvinToCelsius(tempMin), kelvinToCelsius(tempMax), kelvinToCelsius(temp), wind_speed, humidity, pressure, epochToTime(sunrise), epochToTime(sunset), visibility, weather_code, description);
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             Log.e("QueryUtils", "Problem parsing JSON ", e);
         }
         return weatherObject;
@@ -64,8 +61,7 @@ public final class QueryUtils {
 
     private static String epochToDay(long timestamp) {
         Date d = new Date(timestamp * 1000L);
-        SimpleDateFormat formatted = new SimpleDateFormat("EEE, MMM dd, yyyy");
-        formatted.setTimeZone(TimeZone.getTimeZone("IST"));
+        SimpleDateFormat formatted = new SimpleDateFormat("EEE, MMM dd, yyyy ");
         return formatted.format(d);
     }
 
@@ -76,24 +72,14 @@ public final class QueryUtils {
         return formatted.format(d);
     }
 
-    private static String getUpdatedDate(long timestamp) {
-        Date d = new Date(timestamp * 1000L);
-        SimpleDateFormat formatted = new SimpleDateFormat("hh:mm aaa");
-        formatted.setTimeZone(TimeZone.getTimeZone("IST"));
-        return formatted.format(d);
-    }
-
     private static double kelvinToCelsius(double temp) {
         temp -= 273.15;
         return temp;
-        //DecimalFormat temperatureFormat = new DecimalFormat("0.00");
-        //return temperatureFormat.format(temp)+"°";
     }
 
     public static WeatherData fetchWeatherData(String requestUrl) {
 
         URL url = createUrl(requestUrl);
-
 
         String jsonResponse = null;
         try {
@@ -102,11 +88,7 @@ public final class QueryUtils {
             Log.e(LOG_TAG, "Problem making the HTTP request.", e);
         }
 
-
-        WeatherData extractedData = extractJSON(jsonResponse);
-
-
-        return extractedData;
+        return extractJSON(jsonResponse);
     }
 
     private static URL createUrl(String stringUrl) {
@@ -121,18 +103,17 @@ public final class QueryUtils {
 
     private static String makeHttpRequest(URL url) throws IOException {
         String jsonResponse = "";
-
         if (url == null) {
             return jsonResponse;
         }
-
         HttpURLConnection urlConnection = null;
         InputStream inputStream = null;
         try {
             urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setReadTimeout(10000 /* milliseconds */);
-            urlConnection.setConnectTimeout(15000 /* milliseconds */);
+            urlConnection.setReadTimeout(10000);
+            urlConnection.setConnectTimeout(15000);
             urlConnection.setRequestMethod("GET");
+
             urlConnection.connect();
 
             if (urlConnection.getResponseCode() == 200) {
@@ -141,9 +122,13 @@ public final class QueryUtils {
             } else {
                 Log.e(LOG_TAG, "Error response code: " + urlConnection.getResponseCode());
             }
-        } catch (IOException e) {
+        }
+
+        catch (IOException e) {
             Log.e(LOG_TAG, "Problem retrieving the weather JSON results.", e);
-        } finally {
+        }
+
+        finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
@@ -155,6 +140,7 @@ public final class QueryUtils {
     }
 
     private static String readFromStream(InputStream inputStream) throws IOException {
+
         StringBuilder output = new StringBuilder();
         if (inputStream != null) {
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
